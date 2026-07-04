@@ -11,6 +11,15 @@ name: TestFlight
 
 on:
   workflow_dispatch:
+  push:
+    branches: [main]
+    paths:
+      - "Harusem/**"
+      - "HarusemKit/Sources/**"
+      - "project.yml"
+      - "Harusem.storekit"
+      - "fastlane/**"
+      - ".github/workflows/testflight.yml"
 
 jobs:
   upload:
