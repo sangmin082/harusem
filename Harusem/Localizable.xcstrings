@@ -1,0 +1,366 @@
+{
+  "sourceLanguage": "en",
+  "strings": {
+    "%lld day streak": {
+      "localizations": {
+        "ko": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "%lld일 연속 플레이"
+          }
+        }
+      }
+    },
+    "%lld/%lld stars": {
+      "localizations": {
+        "ko": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "별 %1$lld/%2$lld개"
+          }
+        }
+      }
+    },
+    "Add": {
+      "localizations": {
+        "ko": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "더하기"
+          }
+        }
+      }
+    },
+    "Archive": {
+      "localizations": {
+        "ko": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "아카이브"
+          }
+        }
+      }
+    },
+    "Back to today": {
+      "localizations": {
+        "ko": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "오늘 퍼즐로"
+          }
+        }
+      }
+    },
+    "Best so far: %lld": {
+      "localizations": {
+        "ko": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "현재 가장 가까운 값: %lld"
+          }
+        }
+      }
+    },
+    "Combine two tiles with +, −, ×, ÷ to make a new number.": {
+      "localizations": {
+        "ko": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "타일 두 개를 +, −, ×, ÷로 합쳐 새 숫자를 만드세요."
+          }
+        }
+      }
+    },
+    "Day complete!": {
+      "localizations": {
+        "ko": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "오늘의 하루셈 완료!"
+          }
+        }
+      }
+    },
+    "Days played: %lld · Total stars: %lld": {
+      "localizations": {
+        "ko": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "플레이한 날 %1$lld일 · 누적 별 %2$lld개"
+          }
+        }
+      }
+    },
+    "Divide": {
+      "localizations": {
+        "ko": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "나누기"
+          }
+        }
+      }
+    },
+    "Finish this puzzle with %@?": {
+      "localizations": {
+        "ko": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "%@(으)로 이 문제를 마칠까요?"
+          }
+        }
+      }
+    },
+    "Free for the last %lld days": {
+      "localizations": {
+        "ko": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "최근 %lld일은 무료예요"
+          }
+        }
+      }
+    },
+    "Got it": {
+      "localizations": {
+        "ko": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "알겠어요"
+          }
+        }
+      }
+    },
+    "Hints left today: %lld": {
+      "localizations": {
+        "ko": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "오늘 남은 힌트: %lld"
+          }
+        }
+      }
+    },
+    "How to play": {
+      "localizations": {
+        "ko": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "게임 방법"
+          }
+        }
+      }
+    },
+    "Keep trying": {
+      "localizations": {
+        "ko": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "계속 풀기"
+          }
+        }
+      }
+    },
+    "Multiply": {
+      "localizations": {
+        "ko": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "곱하기"
+          }
+        }
+      }
+    },
+    "New puzzles arrive tomorrow.": {
+      "localizations": {
+        "ko": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "내일 새로운 퍼즐이 찾아와요."
+          }
+        }
+      }
+    },
+    "Next move: %@": {
+      "localizations": {
+        "ko": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "다음 수: %@"
+          }
+        }
+      }
+    },
+    "Next puzzle": {
+      "localizations": {
+        "ko": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "다음 문제"
+          }
+        }
+      }
+    },
+    "No path from here — try undo.": {
+      "localizations": {
+        "ko": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "여기서는 도달할 수 없어요 — 되돌려 보세요."
+          }
+        }
+      }
+    },
+    "Puzzle %lld of %lld": {
+      "localizations": {
+        "ko": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "문제 %1$lld / %2$lld"
+          }
+        }
+      }
+    },
+    "Reach the target exactly for 3 stars.": {
+      "localizations": {
+        "ko": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "목표 숫자에 정확히 도달하면 별 3개!"
+          }
+        }
+      }
+    },
+    "Reached the target!": {
+      "localizations": {
+        "ko": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "목표에 도달했어요!"
+          }
+        }
+      }
+    },
+    "Restart": {
+      "localizations": {
+        "ko": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "다시하기"
+          }
+        }
+      }
+    },
+    "Restore purchases": {
+      "localizations": {
+        "ko": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "구매 복원"
+          }
+        }
+      }
+    },
+    "Results must always be positive whole numbers.": {
+      "localizations": {
+        "ko": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "중간 결과는 항상 양의 정수여야 해요."
+          }
+        }
+      }
+    },
+    "Share result": {
+      "localizations": {
+        "ko": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "결과 공유"
+          }
+        }
+      }
+    },
+    "Store is unavailable right now.": {
+      "localizations": {
+        "ko": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "지금은 스토어를 사용할 수 없어요."
+          }
+        }
+      }
+    },
+    "Submit": {
+      "localizations": {
+        "ko": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "제출"
+          }
+        }
+      }
+    },
+    "Subtract": {
+      "localizations": {
+        "ko": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "빼기"
+          }
+        }
+      }
+    },
+    "Target": {
+      "localizations": {
+        "ko": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "목표"
+          }
+        }
+      }
+    },
+    "Undo": {
+      "localizations": {
+        "ko": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "되돌리기"
+          }
+        }
+      }
+    },
+    "Undo anytime. Five puzzles a day, harder as you go.": {
+      "localizations": {
+        "ko": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "언제든 되돌릴 수 있어요. 하루 5문제, 갈수록 어려워져요."
+          }
+        }
+      }
+    },
+    "Unlock the full archive": {
+      "localizations": {
+        "ko": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "전체 아카이브 잠금 해제"
+          }
+        }
+      }
+    },
+    "Within ±10: 2 stars. Within ±25: 1 star.": {
+      "localizations": {
+        "ko": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "오차 ±10 이내는 별 2개, ±25 이내는 별 1개예요."
+          }
+        }
+      }
+    }
+  },
+  "version": "1.0"
+}

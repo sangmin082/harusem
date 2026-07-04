@@ -1,0 +1,58 @@
+{
+  "identifier" : "F3A6B1E0-0000-4000-8000-000000000001",
+  "nonRenewingSubscriptions" : [
+
+  ],
+  "products" : [
+    {
+      "displayPrice" : "2.99",
+      "familyShareable" : false,
+      "internalID" : "F3A6B1E0-0000-4000-8000-000000000002",
+      "localizations" : [
+        {
+          "description" : "Play every past daily puzzle.",
+          "displayName" : "Full Archive",
+          "locale" : "en_US"
+        },
+        {
+          "description" : "지난 모든 데일리 퍼즐을 플레이하세요.",
+          "displayName" : "전체 아카이브",
+          "locale" : "ko"
+        }
+      ],
+      "productID" : "com.harusem.iap.archive",
+      "referenceName" : "Full Archive",
+      "type" : "NonConsumable"
+    },
+    {
+      "displayPrice" : "1.99",
+      "familyShareable" : false,
+      "internalID" : "F3A6B1E0-0000-4000-8000-000000000003",
+      "localizations" : [
+        {
+          "description" : "Remove all ads forever.",
+          "displayName" : "Remove Ads",
+          "locale" : "en_US"
+        },
+        {
+          "description" : "모든 광고를 영구히 제거합니다.",
+          "displayName" : "광고 제거",
+          "locale" : "ko"
+        }
+      ],
+      "productID" : "com.harusem.iap.removeads",
+      "referenceName" : "Remove Ads",
+      "type" : "NonConsumable"
+    }
+  ],
+  "settings" : {
+
+  },
+  "subscriptionGroups" : [
+
+  ],
+  "version" : {
+    "major" : 3,
+    "minor" : 0
+  }
+}
