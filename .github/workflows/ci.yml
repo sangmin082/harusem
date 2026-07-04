@@ -31,8 +31,9 @@ jobs:
       - name: Build app
         run: |
           set -o pipefail
+          # 특정 기기명은 러너 이미지에 따라 없을 수 있으므로 제네릭 시뮬레이터 대상으로 빌드
           xcodebuild -scheme Harusem \
-            -destination 'platform=iOS Simulator,name=iPhone 16' \
+            -destination 'generic/platform=iOS Simulator' \
             -skipPackagePluginValidation \
             build | tail -100
       - name: Run engine tests (macOS)
