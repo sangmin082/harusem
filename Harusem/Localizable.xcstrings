@@ -1,0 +1,146 @@
+{
+  "sourceLanguage" : "en",
+  "strings" : {
+    "Best so far: %lld" : {
+      "localizations" : {
+        "ko" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "현재 가장 가까운 값: %lld"
+          }
+        }
+      }
+    },
+    "Day complete!" : {
+      "localizations" : {
+        "ko" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "오늘의 하루셈 완료!"
+          }
+        }
+      }
+    },
+    "Finish this puzzle with %@?" : {
+      "localizations" : {
+        "ko" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "%@(으)로 이 문제를 마칠까요?"
+          }
+        }
+      }
+    },
+    "Keep trying" : {
+      "localizations" : {
+        "ko" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "계속 풀기"
+          }
+        }
+      }
+    },
+    "New puzzles arrive tomorrow." : {
+      "localizations" : {
+        "ko" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "내일 새로운 퍼즐이 찾아와요."
+          }
+        }
+      }
+    },
+    "Next puzzle" : {
+      "localizations" : {
+        "ko" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "다음 문제"
+          }
+        }
+      }
+    },
+    "Puzzle %lld of %lld" : {
+      "localizations" : {
+        "ko" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "문제 %1$lld / %2$lld"
+          }
+        }
+      }
+    },
+    "Reached the target!" : {
+      "localizations" : {
+        "ko" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "목표에 도달했어요!"
+          }
+        }
+      }
+    },
+    "Restart" : {
+      "localizations" : {
+        "ko" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "다시하기"
+          }
+        }
+      }
+    },
+    "Share result" : {
+      "localizations" : {
+        "ko" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "결과 공유"
+          }
+        }
+      }
+    },
+    "Submit" : {
+      "localizations" : {
+        "ko" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "제출"
+          }
+        }
+      }
+    },
+    "Target" : {
+      "localizations" : {
+        "ko" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "목표"
+          }
+        }
+      }
+    },
+    "Undo" : {
+      "localizations" : {
+        "ko" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "되돌리기"
+          }
+        }
+      }
+    },
+    "%lld/%lld stars" : {
+      "localizations" : {
+        "ko" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "별 %1$lld/%2$lld개"
+          }
+        }
+      }
+    }
+  },
+  "version" : "1.0"
+}
