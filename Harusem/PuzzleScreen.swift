@@ -4,6 +4,8 @@ import HarusemKit
 struct PuzzleScreen: View {
     var model: AppModel
     @State private var showSubmitConfirm = false
+    @State private var showHelp = false
+    @AppStorage("harusem.hasSeenHelp") private var hasSeenHelp = false
 
     private var session: DailySession { model.session }
 
@@ -14,7 +16,16 @@ struct PuzzleScreen: View {
 
     var body: some View {
         VStack(spacing: 20) {
-            ProgressHeader(session: session)
+            HStack(alignment: .center) {
+                ProgressHeader(session: session)
+                Button {
+                    showHelp = true
+                } label: {
+                    Image(systemName: "questionmark.circle")
+                        .font(.title3)
+                }
+                .accessibilityLabel(Text("How to play"))
+            }
             targetSection
             Spacer(minLength: 8)
             TileGrid(model: model)
@@ -25,6 +36,13 @@ struct PuzzleScreen: View {
         .padding(20)
         .sensoryFeedback(.error, trigger: model.rejectionCount)
         .sensoryFeedback(.success, trigger: session.game.isSolved)
+        .sheet(isPresented: $showHelp) { HelpView() }
+        .onAppear {
+            if !hasSeenHelp {
+                showHelp = true
+                hasSeenHelp = true
+            }
+        }
         .confirmationDialog(
             Text("Finish this puzzle with \(starsPreview)?"),
             isPresented: $showSubmitConfirm,
@@ -44,17 +62,22 @@ struct PuzzleScreen: View {
                 .font(.system(size: 56, weight: .heavy, design: .rounded))
                 .monospacedDigit()
                 .contentTransition(.numericText())
-            if session.game.isSolved {
-                Text("Reached the target!")
-                    .font(.headline)
-                    .foregroundStyle(.green)
-            } else if !session.game.moves.isEmpty {
-                Text("Best so far: \(session.game.closestValue)")
-                    .font(.footnote)
-                    .foregroundStyle(.secondary)
-                    .monospacedDigit()
+            Group {
+                if session.game.isSolved {
+                    Text("Reached the target!")
+                        .font(.headline)
+                        .foregroundStyle(.green)
+                        .transition(.scale.combined(with: .opacity))
+                } else if !session.game.moves.isEmpty {
+                    Text("Best so far: \(session.game.closestValue)")
+                        .font(.footnote)
+                        .foregroundStyle(.secondary)
+                        .monospacedDigit()
+                }
             }
         }
+        .animation(.bouncy, value: session.game.isSolved)
+        .accessibilityElement(children: .combine)
     }
 
     private var controls: some View {
@@ -86,6 +109,18 @@ struct PuzzleScreen: View {
                 Button("Submit") { showSubmitConfirm = true }
                     .buttonStyle(.bordered)
             }
+        }
+    }
+}
+
+/// 연산자의 VoiceOver 라벨 (UI 관심사라 앱 타깃에 둔다).
+extension Op {
+    var accessibilityName: LocalizedStringKey {
+        switch self {
+        case .add: "Add"
+        case .subtract: "Subtract"
+        case .multiply: "Multiply"
+        case .divide: "Divide"
         }
     }
 }
@@ -127,6 +162,7 @@ private struct TileGrid: View {
                 TileButton(tile: tile, isSelected: model.selection.lhsID == tile.id) {
                     model.tapTile(tile.id)
                 }
+                .transition(.scale.combined(with: .opacity))
             }
         }
         .animation(.snappy, value: model.session.game.tiles)
@@ -141,7 +177,7 @@ private struct TileButton: View {
     var body: some View {
         Button(action: action) {
             Text("\(tile.value)")
-                .font(.system(size: 28, weight: .bold, design: .rounded))
+                .font(.system(.title2, design: .rounded, weight: .bold))
                 .monospacedDigit()
                 .minimumScaleFactor(0.4)
                 .lineLimit(1)
@@ -154,6 +190,7 @@ private struct TileButton: View {
                 .foregroundStyle(isSelected ? Color.white : Color.primary)
         }
         .buttonStyle(.plain)
+        .accessibilityAddTraits(isSelected ? [.isSelected] : [])
     }
 }
 
@@ -168,7 +205,7 @@ private struct OperatorRow: View {
                     model.tapOp(op)
                 } label: {
                     Text(op.rawValue)
-                        .font(.system(size: 24, weight: .bold, design: .rounded))
+                        .font(.system(.title3, design: .rounded, weight: .bold))
                         .frame(maxWidth: .infinity, minHeight: 52)
                         .background(
                             RoundedRectangle(cornerRadius: 14)
@@ -177,6 +214,8 @@ private struct OperatorRow: View {
                         .foregroundStyle(isSelected ? Color.white : Color.primary)
                 }
                 .buttonStyle(.plain)
+                .accessibilityLabel(op.accessibilityName)
+                .accessibilityAddTraits(isSelected ? [.isSelected] : [])
             }
         }
     }

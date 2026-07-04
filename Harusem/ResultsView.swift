@@ -19,6 +19,14 @@ struct ResultsView: View {
                 .font(.title3)
                 .foregroundStyle(.secondary)
 
+            if model.currentStreak > 1 {
+                HStack(spacing: 4) {
+                    Text(verbatim: "🔥")
+                    Text("\(model.currentStreak) day streak")
+                }
+                .font(.subheadline.weight(.semibold))
+            }
+
             VStack(spacing: 8) {
                 ForEach(0..<session.daily.puzzles.count, id: \.self) { index in
                     let earned = session.stars[index] ?? 0
@@ -43,6 +51,12 @@ struct ResultsView: View {
                 Label("Share result", systemImage: "square.and.arrow.up")
             }
             .buttonStyle(.borderedProminent)
+
+            if model.records.daysPlayed > 1 {
+                Text("Days played: \(model.records.daysPlayed) · Total stars: \(model.records.totalStars)")
+                    .font(.footnote)
+                    .foregroundStyle(.secondary)
+            }
 
             Text("New puzzles arrive tomorrow.")
                 .font(.footnote)

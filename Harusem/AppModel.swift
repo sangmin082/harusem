@@ -9,15 +9,25 @@ import HarusemKit
 final class AppModel {
     private(set) var session: DailySession
     private(set) var selection = TileSelection()
+    private(set) var records: PlayerRecords
     /// 무효 병합 피드백 트리거 (.sensoryFeedback 용 카운터).
     private(set) var rejectionCount = 0
 
     private let defaults: UserDefaults
     private static let snapshotKey = "harusem.session.snapshot"
+    private static let recordsKey = "harusem.records"
 
     init(defaults: UserDefaults = .standard, now: Date = .now) {
         self.defaults = defaults
         self.session = Self.loadOrCreateSession(defaults: defaults, now: now)
+        if let data = defaults.data(forKey: Self.recordsKey),
+           let decoded = try? JSONDecoder().decode(PlayerRecords.self, from: data) {
+            self.records = decoded
+        } else {
+            self.records = PlayerRecords()
+        }
+        // 복원된 세션이 이미 완료 상태면 기록 누락을 보정한다 (멱등).
+        recordDayIfComplete()
     }
 
     private static func loadOrCreateSession(defaults: UserDefaults, now: Date) -> DailySession {
@@ -63,12 +73,28 @@ final class AppModel {
         save()
     }
 
-    /// 현재 문제의 별점을 확정하고 다음 문제로.
+    /// 현재 문제의 별점을 확정하고 다음 문제로. 마지막 문제였으면 하루 기록을 남긴다.
     func submit() {
         guard !session.isDayComplete else { return }
         selection.clear()
         session.submitCurrent()
+        recordDayIfComplete()
         save()
+    }
+
+    /// 오늘 세션 기준 연속 플레이 일수.
+    var currentStreak: Int {
+        records.streak(endingAt: session.daily.dateKey)
+    }
+
+    private func recordDayIfComplete() {
+        guard session.isDayComplete else { return }
+        let stars = session.stars.compactMap { $0 }
+        guard stars.count == session.daily.puzzles.count else { return }
+        records.record(DayRecord(dateKey: session.daily.dateKey, stars: stars))
+        if let data = try? JSONEncoder().encode(records) {
+            defaults.set(data, forKey: Self.recordsKey)
+        }
     }
 
     // MARK: - 라이프사이클
