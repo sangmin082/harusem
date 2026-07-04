@@ -44,11 +44,10 @@ jobs:
           mkdir -p "$RUNNER_TEMP/asc"
           printf '%s\n' "$ASC_KEY_P8" > "$RUNNER_TEMP/asc/AuthKey.p8"
 
-      - name: Archive (cloud-managed signing)
-        env:
-          ASC_KEY_ID: ${{ secrets.ASC_KEY_ID }}
-          ASC_ISSUER_ID: ${{ secrets.ASC_ISSUER_ID }}
+      - name: Archive (unsigned — 서명은 export 단계에서)
         run: |
+          # 팀에 등록된 실기기가 없으면 아카이브 시점의 개발용 프로파일 생성이 실패하므로
+          # 아카이브는 서명 없이 빌드하고, export 단계에서 배포용 서명만 클라우드로 처리한다.
           set -o pipefail
           xcodebuild archive \
             -project Harusem.xcodeproj \
@@ -56,10 +55,8 @@ jobs:
             -configuration Release \
             -destination 'generic/platform=iOS' \
             -archivePath "$RUNNER_TEMP/Harusem.xcarchive" \
-            -allowProvisioningUpdates \
-            -authenticationKeyPath "$RUNNER_TEMP/asc/AuthKey.p8" \
-            -authenticationKeyID "$ASC_KEY_ID" \
-            -authenticationKeyIssuerID "$ASC_ISSUER_ID" \
+            CODE_SIGNING_ALLOWED=NO \
+            CODE_SIGNING_REQUIRED=NO \
             CURRENT_PROJECT_VERSION=$GITHUB_RUN_NUMBER \
             | tail -80
 
