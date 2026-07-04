@@ -9,13 +9,30 @@ import UIKit
 @Observable
 @MainActor
 final class AdsService: NSObject {
-    #if DEBUG
-    static let interstitialUnitID = "ca-app-pub-3940256099942544/4411468910"  // Google 테스트 전면
-    static let rewardedUnitID = "ca-app-pub-3940256099942544/1712485313"      // Google 테스트 리워드
-    #else
-    static let interstitialUnitID = "ca-app-pub-1063542820867439/7673915387"
-    static let rewardedUnitID = "ca-app-pub-1063542820867439/1108507037"
-    #endif
+    /// ⚠️ 임시: 신규 AdMob 유닛 활성화 대기 동안 릴리스(TestFlight)에서도 테스트 광고 사용.
+    /// 유닛 활성화가 확인되면 false로 바꿔 실제 광고로 전환할 것. 디버그는 항상 테스트 광고.
+    static let useTestAds = true
+
+    private static let testInterstitialID = "ca-app-pub-3940256099942544/4411468910"  // Google 테스트 전면
+    private static let testRewardedID = "ca-app-pub-3940256099942544/1712485313"      // Google 테스트 리워드
+    private static let realInterstitialID = "ca-app-pub-1063542820867439/7673915387"
+    private static let realRewardedID = "ca-app-pub-1063542820867439/1108507037"
+
+    static var interstitialUnitID: String {
+        #if DEBUG
+        return testInterstitialID
+        #else
+        return useTestAds ? testInterstitialID : realInterstitialID
+        #endif
+    }
+
+    static var rewardedUnitID: String {
+        #if DEBUG
+        return testRewardedID
+        #else
+        return useTestAds ? testRewardedID : realRewardedID
+        #endif
+    }
 
     private var interstitial: InterstitialAd?
     private var rewarded: RewardedAd?
