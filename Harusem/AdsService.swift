@@ -50,10 +50,10 @@ final class AdsService: NSObject {
     }
 
     private func loadInterstitial() {
-        InterstitialAd.load(with: Self.interstitialUnitID, request: Request()) { [weak self] ad, _ in
-            Task { @MainActor in
-                self?.interstitial = ad
-            }
+        // async API 사용: 완료 핸들러 방식은 Swift 6 격리 검사(sending 'ad')에 걸린다
+        Task {
+            interstitial = try? await InterstitialAd.load(
+                with: Self.interstitialUnitID, request: Request())
         }
     }
 
@@ -75,11 +75,10 @@ final class AdsService: NSObject {
     }
 
     private func loadRewarded() {
-        RewardedAd.load(with: Self.rewardedUnitID, request: Request()) { [weak self] ad, _ in
-            Task { @MainActor in
-                self?.rewarded = ad
-                self?.rewardedReady = ad != nil
-            }
+        Task {
+            rewarded = try? await RewardedAd.load(
+                with: Self.rewardedUnitID, request: Request())
+            rewardedReady = rewarded != nil
         }
     }
 
