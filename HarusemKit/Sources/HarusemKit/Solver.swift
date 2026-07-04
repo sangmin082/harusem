@@ -130,6 +130,13 @@ public enum Solver {
         )
     }
 
+    /// 힌트: 현재 남은 타일에서 목표로 가는 최소 해의 다음 한 수.
+    /// 이미 도달했거나 여기서는 도달 불가면 nil.
+    public static func hint(tiles: [Int], target: Int) -> SolutionStep? {
+        guard !tiles.isEmpty, tiles.count <= 6, !tiles.contains(target) else { return nil }
+        return solve(numbers: tiles, target: target).steps.first
+    }
+
     private static func insertSorted(_ array: inout [Int], _ value: Int) {
         var lo = 0
         var hi = array.count

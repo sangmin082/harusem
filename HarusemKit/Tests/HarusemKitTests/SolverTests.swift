@@ -81,6 +81,34 @@ struct SolverTests {
         #expect(pool.contains(target))
     }
 
+    @Test("힌트: 반복 적용하면 정확히 최소 연산 횟수로 목표에 도달한다")
+    func hintLeadsToTarget() throws {
+        let daily = try PuzzleGenerator().puzzles(for: "2026-07-04")
+        for puzzle in daily.puzzles {
+            var tiles = puzzle.numbers
+            var steps = 0
+            while !tiles.contains(puzzle.target) {
+                guard let hint = Solver.hint(tiles: tiles, target: puzzle.target) else {
+                    Issue.record("풀 수 있는 상태에서 힌트가 nil: \(tiles) → \(puzzle.target)")
+                    return
+                }
+                tiles.remove(at: tiles.firstIndex(of: hint.lhs)!)
+                tiles.remove(at: tiles.firstIndex(of: hint.rhs)!)
+                tiles.append(hint.result)
+                steps += 1
+            }
+            #expect(steps == puzzle.minOperations)
+        }
+    }
+
+    @Test("힌트: 이미 도달했거나 도달 불가면 nil")
+    func hintEdgeCases() {
+        #expect(Solver.hint(tiles: [100, 3], target: 100) == nil)  // 이미 도달
+        #expect(Solver.hint(tiles: [7, 2], target: 3) == nil)  // 도달 불가
+        #expect(Solver.hint(tiles: [], target: 5) == nil)
+        #expect(Solver.hint(tiles: [3, 5], target: 2) == SolutionStep(lhs: 5, op: .subtract, rhs: 3, result: 2))
+    }
+
     @Test("성능: 6개 숫자 전체 분석이 충분히 빠르다")
     func performance() {
         let start = Date()

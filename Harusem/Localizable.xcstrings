@@ -31,6 +31,26 @@
         }
       }
     },
+    "Archive": {
+      "localizations": {
+        "ko": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "아카이브"
+          }
+        }
+      }
+    },
+    "Back to today": {
+      "localizations": {
+        "ko": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "오늘 퍼즐로"
+          }
+        }
+      }
+    },
     "Best so far: %lld": {
       "localizations": {
         "ko": {
@@ -91,12 +111,32 @@
         }
       }
     },
+    "Free for the last %lld days": {
+      "localizations": {
+        "ko": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "최근 %lld일은 무료예요"
+          }
+        }
+      }
+    },
     "Got it": {
       "localizations": {
         "ko": {
           "stringUnit": {
             "state": "translated",
             "value": "알겠어요"
+          }
+        }
+      }
+    },
+    "Hints left today: %lld": {
+      "localizations": {
+        "ko": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "오늘 남은 힌트: %lld"
           }
         }
       }
@@ -141,12 +181,32 @@
         }
       }
     },
+    "Next move: %@": {
+      "localizations": {
+        "ko": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "다음 수: %@"
+          }
+        }
+      }
+    },
     "Next puzzle": {
       "localizations": {
         "ko": {
           "stringUnit": {
             "state": "translated",
             "value": "다음 문제"
+          }
+        }
+      }
+    },
+    "No path from here — try undo.": {
+      "localizations": {
+        "ko": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "여기서는 도달할 수 없어요 — 되돌려 보세요."
           }
         }
       }
@@ -191,6 +251,16 @@
         }
       }
     },
+    "Restore purchases": {
+      "localizations": {
+        "ko": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "구매 복원"
+          }
+        }
+      }
+    },
     "Results must always be positive whole numbers.": {
       "localizations": {
         "ko": {
@@ -207,6 +277,16 @@
           "stringUnit": {
             "state": "translated",
             "value": "결과 공유"
+          }
+        }
+      }
+    },
+    "Store is unavailable right now.": {
+      "localizations": {
+        "ko": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "지금은 스토어를 사용할 수 없어요."
           }
         }
       }
@@ -257,6 +337,16 @@
           "stringUnit": {
             "state": "translated",
             "value": "언제든 되돌릴 수 있어요. 하루 5문제, 갈수록 어려워져요."
+          }
+        }
+      }
+    },
+    "Unlock the full archive": {
+      "localizations": {
+        "ko": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "전체 아카이브 잠금 해제"
           }
         }
       }

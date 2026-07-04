@@ -5,6 +5,7 @@ struct PuzzleScreen: View {
     var model: AppModel
     @State private var showSubmitConfirm = false
     @State private var showHelp = false
+    @State private var showArchive = false
     @AppStorage("harusem.hasSeenHelp") private var hasSeenHelp = false
 
     private var session: DailySession { model.session }
@@ -16,15 +17,39 @@ struct PuzzleScreen: View {
 
     var body: some View {
         VStack(spacing: 20) {
-            HStack(alignment: .center) {
-                ProgressHeader(session: session)
-                Button {
-                    showHelp = true
-                } label: {
-                    Image(systemName: "questionmark.circle")
-                        .font(.title3)
+            if model.isArchivePlay {
+                HStack(alignment: .center, spacing: 12) {
+                    Button {
+                        model.exitArchive()
+                    } label: {
+                        Label("Back to today", systemImage: "chevron.left")
+                            .font(.subheadline)
+                    }
+                    Spacer()
+                    Text(verbatim: session.daily.dateKey)
+                        .font(.subheadline)
+                        .foregroundStyle(.secondary)
+                        .monospacedDigit()
                 }
-                .accessibilityLabel(Text("How to play"))
+                ProgressHeader(session: session)
+            } else {
+                HStack(alignment: .center, spacing: 12) {
+                    ProgressHeader(session: session)
+                    Button {
+                        showArchive = true
+                    } label: {
+                        Image(systemName: "calendar")
+                            .font(.title3)
+                    }
+                    .accessibilityLabel(Text("Archive"))
+                    Button {
+                        showHelp = true
+                    } label: {
+                        Image(systemName: "questionmark.circle")
+                            .font(.title3)
+                    }
+                    .accessibilityLabel(Text("How to play"))
+                }
             }
             targetSection
             Spacer(minLength: 8)
@@ -37,6 +62,7 @@ struct PuzzleScreen: View {
         .sensoryFeedback(.error, trigger: model.rejectionCount)
         .sensoryFeedback(.success, trigger: session.game.isSolved)
         .sheet(isPresented: $showHelp) { HelpView() }
+        .sheet(isPresented: $showArchive) { ArchiveView(model: model) }
         .onAppear {
             if !hasSeenHelp {
                 showHelp = true
@@ -68,6 +94,15 @@ struct PuzzleScreen: View {
                         .font(.headline)
                         .foregroundStyle(.green)
                         .transition(.scale.combined(with: .opacity))
+                } else if let hint = model.currentHint {
+                    Text("Next move: \(hint.description)")
+                        .font(.footnote.weight(.semibold))
+                        .foregroundStyle(Color.accentColor)
+                        .monospacedDigit()
+                } else if model.hintDeadEnd {
+                    Text("No path from here — try undo.")
+                        .font(.footnote.weight(.semibold))
+                        .foregroundStyle(.orange)
                 } else if !session.game.moves.isEmpty {
                     Text("Best so far: \(session.game.closestValue)")
                         .font(.footnote)
@@ -95,6 +130,19 @@ struct PuzzleScreen: View {
                 Label("Restart", systemImage: "arrow.counterclockwise")
             }
             .disabled(session.game.moves.isEmpty)
+
+            Button {
+                model.useHint()
+            } label: {
+                Label {
+                    Text(verbatim: "\(model.hintsRemaining)")
+                        .monospacedDigit()
+                } icon: {
+                    Image(systemName: "lightbulb")
+                }
+            }
+            .disabled(model.hintsRemaining == 0 || session.game.isSolved)
+            .accessibilityLabel(Text("Hints left today: \(model.hintsRemaining)"))
 
             Spacer()
 

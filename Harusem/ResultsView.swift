@@ -4,6 +4,7 @@ import HarusemKit
 /// 하루 5문제 완료 후 결과 요약 + 공유.
 struct ResultsView: View {
     var model: AppModel
+    @State private var showArchive = false
 
     private var session: DailySession { model.session }
 
@@ -19,7 +20,12 @@ struct ResultsView: View {
                 .font(.title3)
                 .foregroundStyle(.secondary)
 
-            if model.currentStreak > 1 {
+            if model.isArchivePlay {
+                Text(verbatim: session.daily.dateKey)
+                    .font(.subheadline)
+                    .foregroundStyle(.secondary)
+                    .monospacedDigit()
+            } else if model.currentStreak > 1 {
                 HStack(spacing: 4) {
                     Text(verbatim: "🔥")
                     Text("\(model.currentStreak) day streak")
@@ -47,23 +53,47 @@ struct ResultsView: View {
             .padding(16)
             .background(RoundedRectangle(cornerRadius: 16).fill(Color(.secondarySystemBackground)))
 
-            ShareLink(item: session.shareText()) {
-                Label("Share result", systemImage: "square.and.arrow.up")
-            }
-            .buttonStyle(.borderedProminent)
+            if model.isArchivePlay {
+                Button {
+                    model.exitArchive()
+                } label: {
+                    Label("Back to today", systemImage: "chevron.left")
+                }
+                .buttonStyle(.borderedProminent)
 
-            if model.records.daysPlayed > 1 {
-                Text("Days played: \(model.records.daysPlayed) · Total stars: \(model.records.totalStars)")
+                Button {
+                    showArchive = true
+                } label: {
+                    Label("Archive", systemImage: "calendar")
+                }
+                .buttonStyle(.bordered)
+            } else {
+                ShareLink(item: session.shareText()) {
+                    Label("Share result", systemImage: "square.and.arrow.up")
+                }
+                .buttonStyle(.borderedProminent)
+
+                Button {
+                    showArchive = true
+                } label: {
+                    Label("Archive", systemImage: "calendar")
+                }
+                .buttonStyle(.bordered)
+
+                if model.records.daysPlayed > 1 {
+                    Text("Days played: \(model.records.daysPlayed) · Total stars: \(model.records.totalStars)")
+                        .font(.footnote)
+                        .foregroundStyle(.secondary)
+                }
+
+                Text("New puzzles arrive tomorrow.")
                     .font(.footnote)
                     .foregroundStyle(.secondary)
             }
 
-            Text("New puzzles arrive tomorrow.")
-                .font(.footnote)
-                .foregroundStyle(.secondary)
-
             Spacer()
         }
         .padding(24)
+        .sheet(isPresented: $showArchive) { ArchiveView(model: model) }
     }
 }

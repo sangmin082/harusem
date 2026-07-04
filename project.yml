@@ -21,6 +21,7 @@ targets:
     scheme:
       testTargets: []
       gatherCoverageData: false
+      storeKitConfiguration: Harusem.storekit
     settings:
       base:
         PRODUCT_BUNDLE_IDENTIFIER: com.harusem.app
