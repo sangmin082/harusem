@@ -2,11 +2,12 @@ name: TestFlight
 
 # 수동 실행: Actions 탭 → TestFlight → Run workflow
 # 필요한 저장소 시크릿 (Settings → Secrets and variables → Actions):
-#   ASC_KEY_ID    — App Store Connect API 키의 Key ID
+#   ASC_KEY_ID    — App Store Connect API 키의 Key ID (Admin 역할 필수)
 #   ASC_ISSUER_ID — App Store Connect API의 Issuer ID
 #   ASC_KEY_P8    — .p8 개인 키 파일 내용 전체 (-----BEGIN PRIVATE KEY----- 포함)
-# 키는 App Store Connect → 사용자 및 액세스 → 통합 → 팀 키에서
-# 역할 "App Manager" 이상으로 발급해야 클라우드 서명(인증서/프로필 자동 생성)이 동작한다.
+#
+# 서명/업로드는 fastlane(cert → sigh → gym → pilot)으로 처리한다.
+# App Store Connect 요구사항: iOS 26 SDK(Xcode 26) 이상으로 빌드해야 업로드 가능.
 
 on:
   workflow_dispatch:
@@ -26,10 +27,23 @@ jobs:
         run: |
           for name in ASC_KEY_ID ASC_ISSUER_ID ASC_KEY_P8; do
             if [ -z "${!name}" ]; then
-              echo "::error::저장소 시크릿 $name 이 설정되지 않았습니다 (Settings → Secrets and variables → Actions)"
+              echo "::error::저장소 시크릿 $name 이 설정되지 않았습니다"
               exit 1
             fi
           done
+
+      - name: Select Xcode 26+
+        run: |
+          echo "사용 가능한 Xcode:"
+          ls -d /Applications/Xcode*.app
+          XCODE=$(ls -d /Applications/Xcode_26*.app 2>/dev/null | sort -V | tail -1 || true)
+          if [ -z "$XCODE" ]; then
+            echo "::warning::Xcode 26이 이 러너 이미지에 없어 최신 버전으로 대체합니다 (업로드 검증에서 SDK 버전 거절 가능)"
+            XCODE=$(ls -d /Applications/Xcode_*.app | sort -V | tail -1)
+          fi
+          echo "선택: $XCODE"
+          sudo xcode-select -s "$XCODE/Contents/Developer"
+          xcodebuild -version
 
       - name: Install XcodeGen
         run: brew install xcodegen
@@ -37,61 +51,9 @@ jobs:
       - name: Generate Xcode project
         run: xcodegen generate
 
-      - name: Write App Store Connect API key
-        env:
-          ASC_KEY_P8: ${{ secrets.ASC_KEY_P8 }}
-        run: |
-          mkdir -p "$RUNNER_TEMP/asc"
-          printf '%s\n' "$ASC_KEY_P8" > "$RUNNER_TEMP/asc/AuthKey.p8"
-
-      - name: Archive (unsigned — 서명은 export 단계에서)
-        run: |
-          # 팀에 등록된 실기기가 없으면 아카이브 시점의 개발용 프로파일 생성이 실패하므로
-          # 아카이브는 서명 없이 빌드하고, export 단계에서 배포용 서명만 클라우드로 처리한다.
-          set -o pipefail
-          xcodebuild archive \
-            -project Harusem.xcodeproj \
-            -scheme Harusem \
-            -configuration Release \
-            -destination 'generic/platform=iOS' \
-            -archivePath "$RUNNER_TEMP/Harusem.xcarchive" \
-            CODE_SIGNING_ALLOWED=NO \
-            CODE_SIGNING_REQUIRED=NO \
-            CURRENT_PROJECT_VERSION=$GITHUB_RUN_NUMBER \
-            | tail -80
-
-      - name: Export & upload to App Store Connect
+      - name: Build & upload via fastlane
         env:
           ASC_KEY_ID: ${{ secrets.ASC_KEY_ID }}
           ASC_ISSUER_ID: ${{ secrets.ASC_ISSUER_ID }}
-        run: |
-          set -o pipefail
-          cat > "$RUNNER_TEMP/ExportOptions.plist" <<'PLIST'
-          <?xml version="1.0" encoding="UTF-8"?>
-          <!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
-          <plist version="1.0">
-          <dict>
-            <key>method</key>
-            <string>app-store-connect</string>
-            <key>destination</key>
-            <string>upload</string>
-            <key>signingStyle</key>
-            <string>automatic</string>
-            <key>teamID</key>
-            <string>R49JBP66QZ</string>
-            <key>uploadSymbols</key>
-            <true/>
-            <key>manageAppVersionAndBuildNumber</key>
-            <false/>
-          </dict>
-          </plist>
-          PLIST
-          xcodebuild -exportArchive \
-            -archivePath "$RUNNER_TEMP/Harusem.xcarchive" \
-            -exportOptionsPlist "$RUNNER_TEMP/ExportOptions.plist" \
-            -allowProvisioningUpdates \
-            -authenticationKeyPath "$RUNNER_TEMP/asc/AuthKey.p8" \
-            -authenticationKeyID "$ASC_KEY_ID" \
-            -authenticationKeyIssuerID "$ASC_ISSUER_ID" \
-            | tail -60
-          echo "업로드 완료 — App Store Connect 처리(10~30분) 후 TestFlight에 나타납니다 (빌드 번호: $GITHUB_RUN_NUMBER)"
+          ASC_KEY_P8: ${{ secrets.ASC_KEY_P8 }}
+        run: fastlane beta

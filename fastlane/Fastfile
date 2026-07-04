@@ -1,0 +1,55 @@
+# TestFlight 업로드 레인. GitHub Actions(macOS 러너)에서 실행 전제.
+# 필요한 환경 변수: ASC_KEY_ID, ASC_ISSUER_ID, ASC_KEY_P8 (Admin 역할 App Store Connect API 키)
+
+default_platform(:ios)
+
+APP_IDENTIFIER = "com.harusem.app"
+TEAM_ID = "R49JBP66QZ"
+
+platform :ios do
+  desc "아카이브 → 서명 → TestFlight 업로드"
+  lane :beta do
+    setup_ci # CI용 임시 키체인 생성
+
+    api_key = app_store_connect_api_key(
+      key_id: ENV.fetch("ASC_KEY_ID"),
+      issuer_id: ENV.fetch("ASC_ISSUER_ID"),
+      key_content: ENV.fetch("ASC_KEY_P8")
+    )
+
+    # 배포 인증서: 없으면 생성, 있으면 재사용 (키체인에 설치됨)
+    cert(api_key: api_key, team_id: TEAM_ID)
+
+    # App Store 배포 프로비저닝 프로파일 생성/갱신
+    sigh(
+      api_key: api_key,
+      app_identifier: APP_IDENTIFIER,
+      team_id: TEAM_ID,
+      force: true
+    )
+
+    # 수동 서명으로 전환해 아카이브 시점부터 배포 인증서로 서명한다
+    # (기기 미등록 팀은 개발용 프로파일 생성이 불가능하므로 자동 서명 아카이브가 실패함)
+    update_code_signing_settings(
+      path: "Harusem.xcodeproj",
+      use_automatic_signing: false,
+      team_id: TEAM_ID,
+      bundle_identifier: APP_IDENTIFIER,
+      code_sign_identity: "Apple Distribution",
+      profile_name: lane_context[SharedValues::SIGH_NAME]
+    )
+
+    build_app(
+      project: "Harusem.xcodeproj",
+      scheme: "Harusem",
+      configuration: "Release",
+      export_method: "app-store",
+      xcargs: "CURRENT_PROJECT_VERSION=#{ENV.fetch('GITHUB_RUN_NUMBER', '1')}"
+    )
+
+    upload_to_testflight(
+      api_key: api_key,
+      skip_waiting_for_build_processing: true
+    )
+  end
+end
