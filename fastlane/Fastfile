@@ -17,8 +17,15 @@ platform :ios do
       key_content: ENV.fetch("ASC_KEY_P8")
     )
 
-    # 배포 인증서: 없으면 생성, 있으면 재사용 (키체인에 설치됨)
-    cert(api_key: api_key, team_id: TEAM_ID)
+    # 배포 인증서: 없으면 생성, 있으면 재사용.
+    # setup_ci가 만든 임시 키체인 경로를 명시해야 한다 —
+    # 기본값(login.keychain)은 CI 러너에서 잠겨 있어 설치 확인에 실패한다.
+    cert(
+      api_key: api_key,
+      team_id: TEAM_ID,
+      keychain_path: File.expand_path("~/Library/Keychains/fastlane_tmp_keychain-db"),
+      keychain_password: ""
+    )
 
     # App Store 배포 프로비저닝 프로파일 생성/갱신
     sigh(
