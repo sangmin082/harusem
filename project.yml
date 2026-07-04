@@ -85,6 +85,8 @@ targets:
     settings:
       base:
         PRODUCT_BUNDLE_IDENTIFIER: com.harusem.app
+        DEVELOPMENT_TEAM: R49JBP66QZ
+        CODE_SIGN_STYLE: Automatic
         TARGETED_DEVICE_FAMILY: "1"
         MARKETING_VERSION: 0.1.0
         CURRENT_PROJECT_VERSION: 1
