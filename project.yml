@@ -31,6 +31,9 @@ targets:
       path: Harusem/Info.plist
       properties:
         CFBundleDisplayName: 하루셈
+        # 리터럴로 박히면 CI의 CURRENT_PROJECT_VERSION 주입이 무시되므로 빌드 설정 참조로 둔다
+        CFBundleVersion: $(CURRENT_PROJECT_VERSION)
+        CFBundleShortVersionString: $(MARKETING_VERSION)
         UILaunchScreen: {}
         UISupportedInterfaceOrientations: [UIInterfaceOrientationPortrait]
         ITSAppUsesNonExemptEncryption: false
