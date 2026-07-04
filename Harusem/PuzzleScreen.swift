@@ -17,7 +17,20 @@ struct PuzzleScreen: View {
 
     var body: some View {
         VStack(spacing: 20) {
-            if model.isArchivePlay {
+            if model.isBonusPlay {
+                HStack(alignment: .center, spacing: 12) {
+                    Button {
+                        model.exitBonus()
+                    } label: {
+                        Label("Back to results", systemImage: "chevron.left")
+                            .font(.subheadline)
+                    }
+                    Spacer()
+                    Text("Bonus puzzle \(model.currentBonusNumber)")
+                        .font(.subheadline.weight(.semibold))
+                        .foregroundStyle(.secondary)
+                }
+            } else if model.isArchivePlay {
                 HStack(alignment: .center, spacing: 12) {
                     Button {
                         model.exitArchive()

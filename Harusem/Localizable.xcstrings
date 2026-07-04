@@ -41,6 +41,16 @@
         }
       }
     },
+    "Back to results": {
+      "localizations": {
+        "ko": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "결과 화면으로"
+          }
+        }
+      }
+    },
     "Back to today": {
       "localizations": {
         "ko": {
@@ -57,6 +67,26 @@
           "stringUnit": {
             "state": "translated",
             "value": "현재 가장 가까운 값: %lld"
+          }
+        }
+      }
+    },
+    "Bonus complete!": {
+      "localizations": {
+        "ko": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "보너스 문제 완료!"
+          }
+        }
+      }
+    },
+    "Bonus puzzle %lld": {
+      "localizations": {
+        "ko": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "보너스 문제 %lld"
           }
         }
       }
@@ -367,6 +397,16 @@
           "stringUnit": {
             "state": "translated",
             "value": "광고 보고 힌트 받기"
+          }
+        }
+      }
+    },
+    "Watch an ad for one more puzzle": {
+      "localizations": {
+        "ko": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "광고 보고 한 문제 더"
           }
         }
       }

@@ -101,4 +101,32 @@ struct GeneratorTests {
         let daily = try PuzzleGenerator().puzzles(for: "2026-01-01")
         #expect(daily.generatorVersion == 1)
     }
+
+    @Test("보너스 문제: 결정성 + 유효성 + 순번별 다양성")
+    func bonusPuzzles() throws {
+        let generator = PuzzleGenerator()
+
+        // 같은 날짜 + 순번 → 항상 같은 문제
+        let first = try generator.bonusPuzzle(for: "2026-07-04", number: 0)
+        for _ in 0..<20 {
+            #expect(try generator.bonusPuzzle(for: "2026-07-04", number: 0) == first)
+        }
+
+        // 순번별 유효성 (해 존재, 자명한 해 리젝, 6개 숫자)
+        var targets: Set<Int> = []
+        for number in 0..<6 {
+            let puzzle = try generator.bonusPuzzle(for: "2026-07-04", number: number)
+            let result = Solver.solve(numbers: puzzle.numbers, target: puzzle.target)
+            #expect(result.isSolvable)
+            #expect(puzzle.minOperations >= 3)
+            #expect(puzzle.numbers.count == 6)
+            #expect(!puzzle.numbers.contains(puzzle.target))
+            targets.insert(puzzle.target)
+        }
+        #expect(targets.count >= 4)  // 순번이 다르면 대체로 다른 문제
+
+        #expect(throws: GeneratorError.invalidDateKey("bad")) {
+            try generator.bonusPuzzle(for: "bad", number: 0)
+        }
+    }
 }

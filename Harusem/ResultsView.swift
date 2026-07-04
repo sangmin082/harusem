@@ -14,13 +14,22 @@ struct ResultsView: View {
 
             Text(verbatim: "🎉")
                 .font(.system(size: 64))
-            Text("Day complete!")
-                .font(.largeTitle.bold())
+            if model.isBonusPlay {
+                Text("Bonus complete!")
+                    .font(.largeTitle.bold())
+            } else {
+                Text("Day complete!")
+                    .font(.largeTitle.bold())
+            }
             Text("\(session.totalStars)/\(session.maxStars) stars")
                 .font(.title3)
                 .foregroundStyle(.secondary)
 
-            if model.isArchivePlay {
+            if model.isBonusPlay {
+                Text("Bonus puzzle \(model.currentBonusNumber)")
+                    .font(.subheadline)
+                    .foregroundStyle(.secondary)
+            } else if model.isArchivePlay {
                 Text(verbatim: session.daily.dateKey)
                     .font(.subheadline)
                     .foregroundStyle(.secondary)
@@ -53,7 +62,22 @@ struct ResultsView: View {
             .padding(16)
             .background(RoundedRectangle(cornerRadius: 16).fill(Color(.secondarySystemBackground)))
 
-            if model.isArchivePlay {
+            if model.isBonusPlay {
+                Button {
+                    model.startBonusViaAd()
+                } label: {
+                    Label("Watch an ad for one more puzzle", systemImage: "play.rectangle")
+                }
+                .buttonStyle(.borderedProminent)
+                .disabled(!model.ads.rewardedReady)
+
+                Button {
+                    model.exitBonus()
+                } label: {
+                    Label("Back to results", systemImage: "chevron.left")
+                }
+                .buttonStyle(.bordered)
+            } else if model.isArchivePlay {
                 Button {
                     model.exitArchive()
                 } label: {
@@ -72,6 +96,15 @@ struct ResultsView: View {
                     Label("Share result", systemImage: "square.and.arrow.up")
                 }
                 .buttonStyle(.borderedProminent)
+
+                // 광고 보고 보너스 문제 계속 풀기
+                Button {
+                    model.startBonusViaAd()
+                } label: {
+                    Label("Watch an ad for one more puzzle", systemImage: "play.rectangle")
+                }
+                .buttonStyle(.bordered)
+                .disabled(!model.ads.rewardedReady)
 
                 Button {
                     showArchive = true

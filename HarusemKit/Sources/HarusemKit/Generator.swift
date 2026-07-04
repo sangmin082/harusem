@@ -14,11 +14,17 @@ public struct Puzzle: Equatable, Codable, Sendable {
     }
 }
 
-/// 하루치 퍼즐 5문제.
+/// 하루치 퍼즐 5문제 (또는 보너스 등 임의 문제 묶음).
 public struct DailyPuzzles: Equatable, Codable, Sendable {
     public let dateKey: String
     public let generatorVersion: Int
     public let puzzles: [Puzzle]
+
+    public init(dateKey: String, generatorVersion: Int, puzzles: [Puzzle]) {
+        self.dateKey = dateKey
+        self.generatorVersion = generatorVersion
+        self.puzzles = puzzles
+    }
 }
 
 public enum GeneratorError: Error, Equatable {
@@ -66,6 +72,25 @@ public struct PuzzleGenerator: Sendable {
             var rng = SplitMix64(seed: FNV1a.hash("harusem/v\(Self.version)/\(dateKey)/\(round)"))
             if let puzzles = generateDay(rng: &rng) {
                 return DailyPuzzles(dateKey: dateKey, generatorVersion: Self.version, puzzles: puzzles)
+            }
+        }
+        throw GeneratorError.exhausted(dateKey: dateKey)
+    }
+
+    /// 하루 5문제 완료 후 "광고 보고 한 문제 더"용 보너스 문제.
+    /// 같은 날짜 + 같은 순번(number) → 항상 같은 문제 (결정성 유지).
+    /// 난이도는 3~5번 문제 프로필을 순환한다.
+    public func bonusPuzzle(for dateKey: String, number: Int) throws -> Puzzle {
+        guard Self.isValidDateKey(dateKey) else {
+            throw GeneratorError.invalidDateKey(dateKey)
+        }
+        precondition(number >= 0)
+        let profileIndex = 2 + (number % 3)
+        for round in 0..<Self.maxRounds {
+            var rng = SplitMix64(
+                seed: FNV1a.hash("harusem/v\(Self.version)/\(dateKey)/bonus/\(number)/\(round)"))
+            if let puzzle = generatePuzzle(index: profileIndex, minScore: -.infinity, rng: &rng) {
+                return puzzle
             }
         }
         throw GeneratorError.exhausted(dateKey: dateKey)

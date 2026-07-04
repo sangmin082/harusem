@@ -74,10 +74,10 @@ final class AdsService: NSObject {
         }
     }
 
-    // MARK: - 리워드 광고 (힌트 충전)
+    // MARK: - 리워드 광고 (힌트 충전, 보너스 문제)
 
     /// 시청 완료 시에만 onReward가 불린다 (중간에 닫으면 보상 없음).
-    func showRewardedForHint(onReward: @escaping () -> Void) {
+    func showRewarded(onReward: @escaping () -> Void) {
         guard let rewarded, let root = Self.rootViewController() else { return }
         self.onReward = onReward
         rewarded.fullScreenContentDelegate = self

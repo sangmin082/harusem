@@ -16,6 +16,8 @@ final class AppModel {
     private(set) var rejectionCount = 0
     /// 아카이브(과거 날짜) 플레이 중인지. 아카이브 진행은 스냅샷 저장하지 않는다.
     private(set) var isArchivePlay = false
+    /// 보너스 문제(광고 보고 한 문제 더) 플레이 중인지. 기록/스냅샷에 영향을 주지 않는다.
+    private(set) var isBonusPlay = false
     /// 현재 표시 중인 힌트 (병합/undo/리셋 시 사라짐).
     private(set) var currentHint: SolutionStep?
     /// 힌트를 눌렀지만 현재 상태에서 도달 불가한 경우.
@@ -28,6 +30,7 @@ final class AppModel {
     private static let snapshotKey = "harusem.session.snapshot"
     private static let recordsKey = "harusem.records"
     private static let hintsKey = "harusem.hints.used"
+    private static let bonusCountKey = "harusem.bonus.count"
 
     /// 아카이브 제공 시작일 (서비스 개시일).
     static let archiveEpoch = "2026-07-01"
@@ -100,10 +103,57 @@ final class AppModel {
         clearHint()
         session.submitCurrent()
         recordDayIfComplete()
-        if session.isDayComplete {
+        // 전면 광고는 오늘의 정규 5문제 완료 시에만 (보너스/아카이브 제외)
+        if session.isDayComplete, !isBonusPlay, !isArchivePlay {
             ads.showInterstitialAfterDayComplete(adsRemoved: store.ownsRemoveAds)
         }
         save()
+    }
+
+    // MARK: - 보너스 문제 (광고 보고 한 문제 더)
+
+    /// 오늘 몇 번째 보너스 문제인지 (1부터 표시용).
+    var currentBonusNumber: Int {
+        max(1, bonusCount())
+    }
+
+    /// 리워드 광고 시청 완료 → 보너스 문제 시작. 오늘 5문제(또는 이전 보너스) 완료 후에만.
+    func startBonusViaAd() {
+        guard session.isDayComplete, !isArchivePlay else { return }
+        ads.showRewarded { [weak self] in
+            self?.enterBonus()
+        }
+    }
+
+    func exitBonus(now: Date = .now) {
+        guard isBonusPlay else { return }
+        selection = TileSelection()
+        clearHint()
+        isBonusPlay = false
+        session = Self.loadOrCreateSession(defaults: defaults, now: now)
+    }
+
+    private func enterBonus(now: Date = .now) {
+        let today = PuzzleGenerator.dateKey(for: now)
+        let number = bonusCount(now: now)
+        guard let puzzle = try? PuzzleGenerator().bonusPuzzle(for: today, number: number) else { return }
+        save()  // 오늘 세션(완료 상태) 먼저 저장
+        selection = TileSelection()
+        clearHint()
+        session = DailySession(daily: DailyPuzzles(
+            dateKey: today,
+            generatorVersion: PuzzleGenerator.version,
+            puzzles: [puzzle]
+        ))
+        isBonusPlay = true
+        defaults.set([today: number + 1], forKey: Self.bonusCountKey)
+    }
+
+    /// 날짜별 보너스 순번 (결정적 생성이라 순번을 저장해야 매번 새 문제가 나온다).
+    private func bonusCount(now: Date = .now) -> Int {
+        let today = PuzzleGenerator.dateKey(for: now)
+        guard let stored = defaults.dictionary(forKey: Self.bonusCountKey) as? [String: Int] else { return 0 }
+        return stored[today] ?? 0
     }
 
     // MARK: - 힌트
@@ -129,7 +179,7 @@ final class AppModel {
     /// 힌트 소진 시: 리워드 광고 시청 완료 → 힌트 1개 충전 후 바로 표시.
     func earnHintFromAd() {
         guard hintsRemaining == 0, !session.isDayComplete, !session.game.isSolved else { return }
-        ads.showRewardedForHint { [weak self] in
+        ads.showRewarded { [weak self] in
             guard let self else { return }
             self.grantBonusHint()
             self.useHint()
@@ -210,7 +260,8 @@ final class AppModel {
     }
 
     private func recordDayIfComplete() {
-        guard session.isDayComplete else { return }
+        // 보너스 문제는 기록에 반영하지 않는다 (오늘 기록을 1문제 세션이 덮어쓰면 안 됨)
+        guard session.isDayComplete, !isBonusPlay else { return }
         let stars = session.stars.compactMap { $0 }
         guard stars.count == session.daily.puzzles.count else { return }
         let newRecord = DayRecord(dateKey: session.daily.dateKey, stars: stars)
@@ -230,7 +281,7 @@ final class AppModel {
     /// 앱이 다시 활성화될 때 날짜가 바뀌었으면 새 하루 세션으로 교체한다.
     /// 아카이브 플레이 중이면 그대로 두고, 나갈 때 오늘 세션을 새로 읽는다.
     func refreshForDateChange(now: Date = .now) {
-        guard !isArchivePlay,
+        guard !isArchivePlay, !isBonusPlay,
               PuzzleGenerator.dateKey(for: now) != session.daily.dateKey
         else { return }
         selection = TileSelection()
@@ -238,9 +289,9 @@ final class AppModel {
         session = Self.loadOrCreateSession(defaults: defaults, now: now)
     }
 
-    /// 오늘 세션만 스냅샷 저장 (아카이브 진행은 저장하지 않는다).
+    /// 오늘 세션만 스냅샷 저장 (아카이브/보너스 진행은 저장하지 않는다).
     func save() {
-        guard !isArchivePlay else { return }
+        guard !isArchivePlay, !isBonusPlay else { return }
         if let data = try? JSONEncoder().encode(session.snapshot) {
             defaults.set(data, forKey: Self.snapshotKey)
         }
