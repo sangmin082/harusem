@@ -11,6 +11,7 @@ final class AppModel {
     private(set) var selection = TileSelection()
     private(set) var records: PlayerRecords
     let store = StoreService()
+    let ads = AdsService()
     /// 무효 병합 피드백 트리거 (.sensoryFeedback 용 카운터).
     private(set) var rejectionCount = 0
     /// 아카이브(과거 날짜) 플레이 중인지. 아카이브 진행은 스냅샷 저장하지 않는다.
@@ -100,7 +101,7 @@ final class AppModel {
         session.submitCurrent()
         recordDayIfComplete()
         if session.isDayComplete {
-            AdGate.interstitialAfterDayComplete(adsRemoved: store.ownsRemoveAds)
+            ads.showInterstitialAfterDayComplete(adsRemoved: store.ownsRemoveAds)
         }
         save()
     }
@@ -115,7 +116,7 @@ final class AppModel {
     func useHint() {
         guard !session.isDayComplete, !session.game.isSolved else { return }
         hintDeadEnd = false
-        guard hintsRemaining > 0 else { return }  // TODO: AdGate.rewardedHintAvailable이면 리워드 광고 제안
+        guard hintsRemaining > 0 else { return }
         let tiles = session.game.tiles.map(\.value)
         if let step = Solver.hint(tiles: tiles, target: session.currentPuzzle.target) {
             currentHint = step
@@ -123,6 +124,21 @@ final class AppModel {
         } else {
             hintDeadEnd = true
         }
+    }
+
+    /// 힌트 소진 시: 리워드 광고 시청 완료 → 힌트 1개 충전 후 바로 표시.
+    func earnHintFromAd() {
+        guard hintsRemaining == 0, !session.isDayComplete, !session.game.isSolved else { return }
+        ads.showRewardedForHint { [weak self] in
+            guard let self else { return }
+            self.grantBonusHint()
+            self.useHint()
+        }
+    }
+
+    private func grantBonusHint(now: Date = .now) {
+        let today = PuzzleGenerator.dateKey(for: now)
+        defaults.set([today: max(0, hintsUsedToday(now: now) - 1)], forKey: Self.hintsKey)
     }
 
     private func clearHint() {

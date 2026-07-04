@@ -2,6 +2,7 @@
 *.xcodeproj
 xcuserdata/
 DerivedData/
+Harusem/Info.plist
 
 # SwiftPM
 .build/

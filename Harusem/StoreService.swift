@@ -67,14 +67,3 @@ final class StoreService {
         await refreshEntitlements()
     }
 }
-
-/// AdMob 연동 지점. 마일스톤 4에서는 광고 없이 훅만 둔다 — SDK 도입 시 이 안만 채우면 된다.
-enum AdGate {
-    /// 하루 5문제 완료 직후 전면 광고 1회. adsRemoved(IAP)면 표시하지 않는다.
-    static func interstitialAfterDayComplete(adsRemoved: Bool) {
-        // TODO: AdMob 전면 광고 노출 (adsRemoved == false일 때만)
-    }
-
-    /// 힌트 소진 시 리워드 광고로 충전. 현재는 광고 없이 항상 거절.
-    static var rewardedHintAvailable: Bool { false }
-}
