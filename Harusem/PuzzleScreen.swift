@@ -131,18 +131,29 @@ struct PuzzleScreen: View {
             }
             .disabled(session.game.moves.isEmpty)
 
-            Button {
-                model.useHint()
-            } label: {
-                Label {
-                    Text(verbatim: "\(model.hintsRemaining)")
-                        .monospacedDigit()
-                } icon: {
-                    Image(systemName: "lightbulb")
+            if model.hintsRemaining == 0 && model.ads.rewardedReady {
+                // 힌트 소진 → 리워드 광고 시청으로 1개 충전
+                Button {
+                    model.earnHintFromAd()
+                } label: {
+                    Label("Hint", systemImage: "play.rectangle")
                 }
+                .disabled(session.game.isSolved)
+                .accessibilityLabel(Text("Watch an ad for a hint"))
+            } else {
+                Button {
+                    model.useHint()
+                } label: {
+                    Label {
+                        Text(verbatim: "\(model.hintsRemaining)")
+                            .monospacedDigit()
+                    } icon: {
+                        Image(systemName: "lightbulb")
+                    }
+                }
+                .disabled(model.hintsRemaining == 0 || session.game.isSolved)
+                .accessibilityLabel(Text("Hints left today: \(model.hintsRemaining)"))
             }
-            .disabled(model.hintsRemaining == 0 || session.game.isSolved)
-            .accessibilityLabel(Text("Hints left today: \(model.hintsRemaining)"))
 
             Spacer()
 

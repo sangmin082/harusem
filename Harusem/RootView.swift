@@ -13,7 +13,10 @@ struct RootView: View {
             }
         }
         .animation(.default, value: model.session.isDayComplete)
-        .task { model.store.start() }
+        .task {
+            model.store.start()
+            model.ads.start()
+        }
         .onChange(of: scenePhase) { _, phase in
             if phase == .active {
                 model.refreshForDateChange()

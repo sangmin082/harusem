@@ -131,6 +131,16 @@
         }
       }
     },
+    "Hint": {
+      "localizations": {
+        "ko": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "힌트"
+          }
+        }
+      }
+    },
     "Hints left today: %lld": {
       "localizations": {
         "ko": {
@@ -347,6 +357,16 @@
           "stringUnit": {
             "state": "translated",
             "value": "전체 아카이브 잠금 해제"
+          }
+        }
+      }
+    },
+    "Watch an ad for a hint": {
+      "localizations": {
+        "ko": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "광고 보고 힌트 받기"
           }
         }
       }
