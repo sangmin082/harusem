@@ -17,6 +17,21 @@ platform :ios do
       key_content: ENV.fetch("ASC_KEY_P8")
     )
 
+    # 이전 실패 런들이 남긴 배포 인증서 잔재 정리.
+    # 개인 키가 러너와 함께 사라져 재사용이 불가능하고, 팀당 한도(2개)에 걸린다.
+    # 이 팀은 하루셈 전용이므로 배포 인증서 전체 폐기가 안전하다.
+    begin
+      Spaceship::ConnectAPI.token = Spaceship::ConnectAPI::Token.from(hash: api_key)
+      Spaceship::ConnectAPI::Certificate.all
+        .select { |c| ["DISTRIBUTION", "IOS_DISTRIBUTION"].include?(c.certificate_type) }
+        .each do |c|
+          UI.important("기존 배포 인증서 폐기: #{c.id} (#{c.certificate_type})")
+          Spaceship::ConnectAPI.delete_certificate(certificate_id: c.id)
+        end
+    rescue => e
+      UI.important("인증서 정리 실패, 계속 진행: #{e.message}")
+    end
+
     # 배포 인증서: 없으면 생성, 있으면 재사용.
     # setup_ci가 만든 임시 키체인 경로를 명시해야 한다 —
     # 기본값(login.keychain)은 CI 러너에서 잠겨 있어 설치 확인에 실패한다.
