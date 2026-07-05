@@ -299,6 +299,7 @@ final class AppModel {
         clearHint()
         session = DailySession(daily: daily)
         isArchivePlay = true
+        isBonusPlay = false  // 보너스 플레이 중 캘린더로 진입하는 경로 정리
     }
 
     /// 아카이브에서 나와 오늘 세션으로 복귀.

@@ -1,6 +1,30 @@
 import SwiftUI
 import HarusemKit
 
+/// 우상단 고정 하트 잔량 칩 (모든 탭 공통).
+struct HeartChip: View {
+    var model: AppModel
+    let action: () -> Void
+
+    var body: some View {
+        Button(action: action) {
+            HStack(spacing: 3) {
+                Image(systemName: "heart.fill")
+                    .foregroundStyle(.red)
+                Text(verbatim: "\(model.hearts)")
+                    .monospacedDigit()
+                    .fontWeight(.semibold)
+            }
+            .font(.subheadline)
+            .padding(.horizontal, 10)
+            .padding(.vertical, 5)
+            .background(Capsule().fill(Color(.secondarySystemBackground)))
+        }
+        .buttonStyle(.plain)
+        .accessibilityLabel(Text("Hearts: \(model.hearts)"))
+    }
+}
+
 /// 하트 상태 시트: 보유량, 다음 충전까지 남은 시간, 광고 충전.
 struct HeartsView: View {
     var model: AppModel

@@ -4,8 +4,6 @@ import HarusemKit
 /// 하루 5문제 완료 후 결과 요약 + 공유.
 struct ResultsView: View {
     var model: AppModel
-    @State private var showArchive = false
-    @State private var showStats = false
 
     private var session: DailySession { model.session }
 
@@ -85,13 +83,6 @@ struct ResultsView: View {
                     Label("Back to today", systemImage: "chevron.left")
                 }
                 .buttonStyle(.borderedProminent)
-
-                Button {
-                    showArchive = true
-                } label: {
-                    Label("Archive", systemImage: "calendar")
-                }
-                .buttonStyle(.bordered)
             } else {
                 ShareLink(item: model.shareTextWithStreak) {
                     Label("Share result", systemImage: "square.and.arrow.up")
@@ -107,22 +98,6 @@ struct ResultsView: View {
                 .buttonStyle(.bordered)
                 .disabled(!model.ads.rewardedReady)
 
-                HStack(spacing: 12) {
-                    Button {
-                        showArchive = true
-                    } label: {
-                        Label("Archive", systemImage: "calendar")
-                    }
-                    .buttonStyle(.bordered)
-
-                    Button {
-                        showStats = true
-                    } label: {
-                        Label("Stats", systemImage: "chart.bar")
-                    }
-                    .buttonStyle(.bordered)
-                }
-
                 if model.records.daysPlayed > 1 {
                     Text("Days played: \(model.records.daysPlayed) · Total stars: \(model.records.totalStars)")
                         .font(.footnote)
@@ -137,7 +112,5 @@ struct ResultsView: View {
             Spacer()
         }
         .padding(24)
-        .sheet(isPresented: $showArchive) { ArchiveView(model: model) }
-        .sheet(isPresented: $showStats) { StatsView(model: model) }
     }
 }

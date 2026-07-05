@@ -1,11 +1,12 @@
 import SwiftUI
 import HarusemKit
 
-/// 캘린더: 오늘 + 과거 날짜 퍼즐 목록/플레이. 최근 N일 무료, 그 이전은 아카이브 IAP.
+/// 캘린더 탭: 오늘 + 과거 날짜 퍼즐 목록/플레이. 최근 N일 무료, 그 이전은 아카이브 IAP.
 /// 하트가 없으면 아직 만점이 아닌 날짜는 새로 시작할 수 없다 (하트 시트로 안내).
-struct ArchiveView: View {
+/// 날짜를 고르면 홈 탭으로 전환되어 플레이가 시작된다.
+struct CalendarTab: View {
     var model: AppModel
-    @Environment(\.dismiss) private var dismiss
+    var goHome: () -> Void
     @State private var showPaywall = false
     @State private var showHearts = false
 
@@ -14,10 +15,9 @@ struct ArchiveView: View {
             List {
                 Section {
                     Button {
-                        if model.isArchivePlay {
-                            model.exitArchive()
-                        }
-                        dismiss()
+                        if model.isArchivePlay { model.exitArchive() }
+                        if model.isBonusPlay { model.exitBonus() }
+                        goHome()
                     } label: {
                         HStack {
                             Text("Today")
@@ -49,7 +49,7 @@ struct ArchiveView: View {
                                 showHearts = true
                             } else {
                                 model.enterArchive(dateKey: dateKey)
-                                dismiss()
+                                goHome()
                             }
                         } label: {
                             ArchiveRow(dateKey: dateKey, record: record, locked: locked)
@@ -60,15 +60,6 @@ struct ArchiveView: View {
             }
             .navigationTitle(Text("Calendar"))
             .navigationBarTitleDisplayMode(.inline)
-            .toolbar {
-                ToolbarItem(placement: .cancellationAction) {
-                    Button {
-                        dismiss()
-                    } label: {
-                        Image(systemName: "xmark")
-                    }
-                }
-            }
             .sheet(isPresented: $showPaywall) {
                 PaywallView(store: model.store)
             }

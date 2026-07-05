@@ -301,6 +301,16 @@
         }
       }
     },
+    "Home": {
+      "localizations": {
+        "ko": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "홈"
+          }
+        }
+      }
+    },
     "How to play": {
       "localizations": {
         "ko": {
@@ -477,6 +487,16 @@
           "stringUnit": {
             "state": "translated",
             "value": "중간 결과는 항상 양의 정수여야 해요."
+          }
+        }
+      }
+    },
+    "Settings": {
+      "localizations": {
+        "ko": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "설정"
           }
         }
       }

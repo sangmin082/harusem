@@ -5,11 +5,6 @@ struct PuzzleScreen: View {
     var model: AppModel
     @State private var showSubmitConfirm = false
     @State private var showHelp = false
-    @State private var showArchive = false
-    @State private var showStats = false
-    @State private var showHearts = false
-
-    private let heartTimer = Timer.publish(every: 30, on: .main, in: .common).autoconnect()
     @AppStorage("harusem.hasSeenHelp") private var hasSeenHelp = false
 
     private var session: DailySession { model.session }
@@ -51,22 +46,7 @@ struct PuzzleScreen: View {
                 ProgressHeader(session: session)
             } else {
                 HStack(alignment: .center, spacing: 12) {
-                    HeartChip(model: model) { showHearts = true }
                     ProgressHeader(session: session)
-                    Button {
-                        showStats = true
-                    } label: {
-                        Image(systemName: "chart.bar")
-                            .font(.title3)
-                    }
-                    .accessibilityLabel(Text("Stats"))
-                    Button {
-                        showArchive = true
-                    } label: {
-                        Image(systemName: "calendar")
-                            .font(.title3)
-                    }
-                    .accessibilityLabel(Text("Archive"))
                     Button {
                         showHelp = true
                     } label: {
@@ -91,12 +71,6 @@ struct PuzzleScreen: View {
         .sensoryFeedback(.error, trigger: model.rejectionCount)
         .sensoryFeedback(.success, trigger: session.game.isSolved)
         .sheet(isPresented: $showHelp) { HelpView() }
-        .sheet(isPresented: $showArchive) { ArchiveView(model: model) }
-        .sheet(isPresented: $showStats) { StatsView(model: model) }
-        .sheet(isPresented: $showHearts) { HeartsView(model: model) }
-        .onReceive(heartTimer) { _ in
-            model.refreshHearts()
-        }
         .onAppear {
             if !hasSeenHelp {
                 showHelp = true
@@ -203,27 +177,6 @@ struct PuzzleScreen: View {
                     .buttonStyle(.bordered)
             }
         }
-    }
-}
-
-/// 헤더의 하트 잔량 칩.
-private struct HeartChip: View {
-    var model: AppModel
-    let action: () -> Void
-
-    var body: some View {
-        Button(action: action) {
-            HStack(spacing: 3) {
-                Image(systemName: "heart.fill")
-                    .foregroundStyle(.red)
-                Text(verbatim: "\(model.hearts)")
-                    .monospacedDigit()
-                    .fontWeight(.semibold)
-            }
-            .font(.subheadline)
-        }
-        .buttonStyle(.plain)
-        .accessibilityLabel(Text("Hearts: \(model.hearts)"))
     }
 }
 

@@ -2,12 +2,12 @@ import SwiftUI
 import HarusemKit
 import StoreKit
 
-/// 통계 + 스토어 + 데일리 리마인더 허브.
+/// 설정 탭: 통계 + 데일리 리마인더 + 스토어 + 게임 방법.
 struct StatsView: View {
     var model: AppModel
-    @Environment(\.dismiss) private var dismiss
     @AppStorage("harusem.reminder.enabled") private var reminderEnabled = false
     @State private var reminderDenied = false
+    @State private var showHelp = false
 
     var body: some View {
         NavigationStack {
@@ -65,18 +65,24 @@ struct StatsView: View {
                 } header: {
                     Text("Store")
                 }
-            }
-            .navigationTitle(Text("Stats"))
-            .navigationBarTitleDisplayMode(.inline)
-            .toolbar {
-                ToolbarItem(placement: .cancellationAction) {
+
+                Section {
                     Button {
-                        dismiss()
+                        showHelp = true
                     } label: {
-                        Image(systemName: "xmark")
+                        HStack {
+                            Text("How to play")
+                                .foregroundStyle(Color.primary)
+                            Spacer()
+                            Image(systemName: "questionmark.circle")
+                                .foregroundStyle(.secondary)
+                        }
                     }
                 }
             }
+            .navigationTitle(Text("Settings"))
+            .navigationBarTitleDisplayMode(.inline)
+            .sheet(isPresented: $showHelp) { HelpView() }
             .task {
                 if model.store.products.isEmpty {
                     await model.store.loadProducts()
