@@ -20,6 +20,8 @@ struct HelpView: View {
                     "Results must always be positive whole numbers.")
             ruleRow("arrow.uturn.backward",
                     "Undo anytime. Five puzzles a day, harder as you go.")
+            ruleRow("heart.fill",
+                    "A day finished without all 3 stars costs one heart. Hearts refill every 30 minutes.")
 
             Spacer()
 

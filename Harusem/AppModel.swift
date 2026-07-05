@@ -27,10 +27,13 @@ final class AppModel {
     static let dailyHintAllowance = 3
 
     private let defaults: UserDefaults
+    private(set) var heartBank: HeartBank
+
     private static let snapshotKey = "harusem.session.snapshot"
     private static let recordsKey = "harusem.records"
     private static let hintsKey = "harusem.hints.used"
     private static let bonusCountKey = "harusem.bonus.count"
+    private static let heartsKey = "harusem.hearts"
 
     /// 아카이브 제공 시작일 (서비스 개시일).
     static let archiveEpoch = "2026-07-01"
@@ -46,6 +49,13 @@ final class AppModel {
         } else {
             self.records = PlayerRecords()
         }
+        if let data = defaults.data(forKey: Self.heartsKey),
+           let decoded = try? JSONDecoder().decode(HeartBank.self, from: data) {
+            self.heartBank = decoded
+        } else {
+            self.heartBank = HeartBank(now: now.timeIntervalSince1970)
+        }
+        refreshHearts(now: now)
         // 복원된 세션이 이미 완료 상태면 기록 누락을 보정한다 (멱등).
         recordDayIfComplete()
     }
@@ -103,6 +113,11 @@ final class AppModel {
         clearHint()
         session.submitCurrent()
         recordDayIfComplete()
+        // 하트 규칙: 별 3개 만점 없이 하루를 끝내면 하트 1개 차감 (보너스 제외)
+        if session.isDayComplete, !isBonusPlay, session.totalStars < session.maxStars {
+            heartBank.spend(now: Date.now.timeIntervalSince1970)
+            saveHearts()
+        }
         // 전면 광고는 오늘의 정규 5문제 완료 시에만 (보너스/아카이브 제외).
         // 결과 화면 전환 애니메이션과 겹치지 않게 잠깐 기다렸다 띄운다.
         if session.isDayComplete, !isBonusPlay, !isArchivePlay {
@@ -159,6 +174,46 @@ final class AppModel {
         let today = PuzzleGenerator.dateKey(for: now)
         guard let stored = defaults.dictionary(forKey: Self.bonusCountKey) as? [String: Int] else { return 0 }
         return stored[today] ?? 0
+    }
+
+    // MARK: - 하트
+
+    var hearts: Int { heartBank.hearts }
+
+    /// 하트가 없어 새 플레이를 시작할 수 없는 상태.
+    /// 이미 진행 중인 판(이동 있음)이나 완료된 하루, 보너스(광고로 입장)는 막지 않는다.
+    var needsHeartToPlay: Bool {
+        hearts == 0 && !isBonusPlay && !session.isDayComplete
+            && session.currentIndex == 0 && session.game.moves.isEmpty
+    }
+
+    /// 다음 하트까지 남은 분 (가득이면 nil).
+    var nextHeartMinutes: Int? {
+        guard let seconds = heartBank.nextRegenIn(now: Date.now.timeIntervalSince1970) else { return nil }
+        return max(1, Int((seconds / 60).rounded(.up)))
+    }
+
+    /// 경과 시간만큼 하트 자동 충전 (타이머/앱 활성화 시 호출).
+    func refreshHearts(now: Date = .now) {
+        let before = heartBank
+        heartBank.refresh(now: now.timeIntervalSince1970)
+        if heartBank != before { saveHearts() }
+    }
+
+    /// 리워드 광고 시청 완료 → 하트 1개 충전.
+    func refillHeartViaAd() {
+        guard hearts < HeartBank.capacity else { return }
+        ads.showRewarded { [weak self] in
+            guard let self else { return }
+            self.heartBank.refill(now: Date.now.timeIntervalSince1970)
+            self.saveHearts()
+        }
+    }
+
+    private func saveHearts() {
+        if let data = try? JSONEncoder().encode(heartBank) {
+            defaults.set(data, forKey: Self.heartsKey)
+        }
     }
 
     // MARK: - 힌트

@@ -19,6 +19,7 @@ struct RootView: View {
                 // ATT 팝업은 앱이 활성화된 뒤 요청해야 뜬다 (start는 1회 실행 가드 있음)
                 model.ads.start()
                 model.refreshForDateChange()
+                model.refreshHearts()
             } else {
                 model.save()
             }

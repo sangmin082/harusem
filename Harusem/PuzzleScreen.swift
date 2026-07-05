@@ -7,6 +7,9 @@ struct PuzzleScreen: View {
     @State private var showHelp = false
     @State private var showArchive = false
     @State private var showStats = false
+    @State private var showHearts = false
+
+    private let heartTimer = Timer.publish(every: 30, on: .main, in: .common).autoconnect()
     @AppStorage("harusem.hasSeenHelp") private var hasSeenHelp = false
 
     private var session: DailySession { model.session }
@@ -48,6 +51,7 @@ struct PuzzleScreen: View {
                 ProgressHeader(session: session)
             } else {
                 HStack(alignment: .center, spacing: 12) {
+                    HeartChip(model: model) { showHearts = true }
                     ProgressHeader(session: session)
                     Button {
                         showStats = true
@@ -74,8 +78,12 @@ struct PuzzleScreen: View {
             }
             targetSection
             Spacer(minLength: 8)
-            TileGrid(model: model)
-            OperatorRow(model: model)
+            if model.needsHeartToPlay {
+                OutOfHeartsCard(model: model)
+            } else {
+                TileGrid(model: model)
+                OperatorRow(model: model)
+            }
             Spacer(minLength: 8)
             controls
         }
@@ -85,6 +93,10 @@ struct PuzzleScreen: View {
         .sheet(isPresented: $showHelp) { HelpView() }
         .sheet(isPresented: $showArchive) { ArchiveView(model: model) }
         .sheet(isPresented: $showStats) { StatsView(model: model) }
+        .sheet(isPresented: $showHearts) { HeartsView(model: model) }
+        .onReceive(heartTimer) { _ in
+            model.refreshHearts()
+        }
         .onAppear {
             if !hasSeenHelp {
                 showHelp = true
@@ -191,6 +203,60 @@ struct PuzzleScreen: View {
                     .buttonStyle(.bordered)
             }
         }
+    }
+}
+
+/// 헤더의 하트 잔량 칩.
+private struct HeartChip: View {
+    var model: AppModel
+    let action: () -> Void
+
+    var body: some View {
+        Button(action: action) {
+            HStack(spacing: 3) {
+                Image(systemName: "heart.fill")
+                    .foregroundStyle(.red)
+                Text(verbatim: "\(model.hearts)")
+                    .monospacedDigit()
+                    .fontWeight(.semibold)
+            }
+            .font(.subheadline)
+        }
+        .buttonStyle(.plain)
+        .accessibilityLabel(Text("Hearts: \(model.hearts)"))
+    }
+}
+
+/// 하트 소진 시 타일 영역을 대신하는 안내 카드.
+private struct OutOfHeartsCard: View {
+    var model: AppModel
+
+    var body: some View {
+        VStack(spacing: 14) {
+            Text(verbatim: "💔")
+                .font(.system(size: 52))
+            Text("Out of hearts")
+                .font(.headline)
+            if let minutes = model.nextHeartMinutes {
+                Text("Next heart: \(minutes) min")
+                    .font(.subheadline)
+                    .foregroundStyle(.secondary)
+                    .monospacedDigit()
+            }
+            Button {
+                model.refillHeartViaAd()
+            } label: {
+                Label("Watch an ad to refill a heart", systemImage: "play.rectangle")
+            }
+            .buttonStyle(.borderedProminent)
+            .disabled(!model.ads.rewardedReady)
+            Text("Hearts refill every 30 minutes.")
+                .font(.footnote)
+                .foregroundStyle(.secondary)
+        }
+        .frame(maxWidth: .infinity)
+        .padding(24)
+        .background(RoundedRectangle(cornerRadius: 20).fill(Color(.secondarySystemBackground)))
     }
 }
 
