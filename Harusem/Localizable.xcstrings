@@ -31,6 +31,16 @@
         }
       }
     },
+    "Allow notifications in Settings to enable reminders.": {
+      "localizations": {
+        "ko": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "알림을 켜려면 iOS 설정에서 허용해주세요."
+          }
+        }
+      }
+    },
     "Archive": {
       "localizations": {
         "ko": {
@@ -101,12 +111,42 @@
         }
       }
     },
+    "Current streak": {
+      "localizations": {
+        "ko": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "현재 스트릭"
+          }
+        }
+      }
+    },
+    "Daily reminder": {
+      "localizations": {
+        "ko": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "데일리 알림"
+          }
+        }
+      }
+    },
     "Day complete!": {
       "localizations": {
         "ko": {
           "stringUnit": {
             "state": "translated",
             "value": "오늘의 하루셈 완료!"
+          }
+        }
+      }
+    },
+    "Days played": {
+      "localizations": {
+        "ko": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "플레이한 날"
           }
         }
       }
@@ -141,12 +181,32 @@
         }
       }
     },
+    "Five fresh puzzles are waiting.": {
+      "localizations": {
+        "ko": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "새 퍼즐 5문제가 기다리고 있어요."
+          }
+        }
+      }
+    },
     "Free for the last %lld days": {
       "localizations": {
         "ko": {
           "stringUnit": {
             "state": "translated",
             "value": "최근 %lld일은 무료예요"
+          }
+        }
+      }
+    },
+    "Get a nudge when new puzzles arrive.": {
+      "localizations": {
+        "ko": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "새 퍼즐이 나오면 알려드려요."
           }
         }
       }
@@ -201,6 +261,26 @@
         }
       }
     },
+    "Last 14 days": {
+      "localizations": {
+        "ko": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "최근 14일"
+          }
+        }
+      }
+    },
+    "Longest streak": {
+      "localizations": {
+        "ko": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "최장 스트릭"
+          }
+        }
+      }
+    },
     "Multiply": {
       "localizations": {
         "ko": {
@@ -247,6 +327,16 @@
           "stringUnit": {
             "state": "translated",
             "value": "여기서는 도달할 수 없어요 — 되돌려 보세요."
+          }
+        }
+      }
+    },
+    "Perfect days": {
+      "localizations": {
+        "ko": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "퍼펙트 데이"
           }
         }
       }
@@ -321,6 +411,16 @@
         }
       }
     },
+    "Stats": {
+      "localizations": {
+        "ko": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "통계"
+          }
+        }
+      }
+    },
     "Store is unavailable right now.": {
       "localizations": {
         "ko": {
@@ -357,6 +457,26 @@
           "stringUnit": {
             "state": "translated",
             "value": "목표"
+          }
+        }
+      }
+    },
+    "Today's Harusem is ready!": {
+      "localizations": {
+        "ko": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "오늘의 하루셈이 도착했어요!"
+          }
+        }
+      }
+    },
+    "Total stars": {
+      "localizations": {
+        "ko": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "누적 별"
           }
         }
       }

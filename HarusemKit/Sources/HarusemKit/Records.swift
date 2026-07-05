@@ -77,6 +77,23 @@ public struct PlayerRecords: Codable, Equatable, Sendable {
     public var totalStars: Int { days.reduce(0) { $0 + $1.totalStars } }
     public var perfectDayCount: Int { days.count { $0.isPerfect } }
 
+    /// 역대 최장 연속 플레이 일수.
+    public var longestStreak: Int {
+        var best = 0
+        var current = 0
+        var previous: String?
+        for day in days {  // dateKey 오름차순 유지됨
+            if let previous, DateKey.previous(day.dateKey) == previous {
+                current += 1
+            } else {
+                current = 1
+            }
+            best = max(best, current)
+            previous = day.dateKey
+        }
+        return best
+    }
+
     /// dateKey에서 끝나는 연속 플레이 일수. 그날 기록이 없으면 0.
     public func streak(endingAt dateKey: String) -> Int {
         let played = Set(days.map(\.dateKey))

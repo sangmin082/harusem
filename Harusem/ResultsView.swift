@@ -5,6 +5,7 @@ import HarusemKit
 struct ResultsView: View {
     var model: AppModel
     @State private var showArchive = false
+    @State private var showStats = false
 
     private var session: DailySession { model.session }
 
@@ -92,7 +93,7 @@ struct ResultsView: View {
                 }
                 .buttonStyle(.bordered)
             } else {
-                ShareLink(item: session.shareText()) {
+                ShareLink(item: model.shareTextWithStreak) {
                     Label("Share result", systemImage: "square.and.arrow.up")
                 }
                 .buttonStyle(.borderedProminent)
@@ -106,12 +107,21 @@ struct ResultsView: View {
                 .buttonStyle(.bordered)
                 .disabled(!model.ads.rewardedReady)
 
-                Button {
-                    showArchive = true
-                } label: {
-                    Label("Archive", systemImage: "calendar")
+                HStack(spacing: 12) {
+                    Button {
+                        showArchive = true
+                    } label: {
+                        Label("Archive", systemImage: "calendar")
+                    }
+                    .buttonStyle(.bordered)
+
+                    Button {
+                        showStats = true
+                    } label: {
+                        Label("Stats", systemImage: "chart.bar")
+                    }
+                    .buttonStyle(.bordered)
                 }
-                .buttonStyle(.bordered)
 
                 if model.records.daysPlayed > 1 {
                     Text("Days played: \(model.records.daysPlayed) · Total stars: \(model.records.totalStars)")
@@ -128,5 +138,6 @@ struct ResultsView: View {
         }
         .padding(24)
         .sheet(isPresented: $showArchive) { ArchiveView(model: model) }
+        .sheet(isPresented: $showStats) { StatsView(model: model) }
     }
 }

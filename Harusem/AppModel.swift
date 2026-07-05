@@ -259,6 +259,34 @@ final class AppModel {
         records.streak(endingAt: session.daily.dateKey)
     }
 
+    /// 공유 텍스트 (스트릭이 2일 이상이면 🔥 라인 추가).
+    var shareTextWithStreak: String {
+        let base = session.shareText()
+        let streak = currentStreak
+        return streak > 1 ? base + "\n🔥 \(streak)일 연속" : base
+    }
+
+    struct RecentDay: Identifiable {
+        let dateKey: String
+        /// 그날 획득한 총 별 (기록 없으면 nil).
+        let stars: Int?
+        var id: String { dateKey }
+    }
+
+    /// 오늘 포함 최근 N일 기록 (통계 히트맵용, 과거 → 오늘 순).
+    func recentDays(_ count: Int, now: Date = .now) -> [RecentDay] {
+        var keys: [String] = []
+        var cursor: String? = PuzzleGenerator.dateKey(for: now)
+        for _ in 0..<count {
+            guard let key = cursor else { break }
+            keys.append(key)
+            cursor = DateKey.previous(key)
+        }
+        return keys.reversed().map { key in
+            RecentDay(dateKey: key, stars: records.day(for: key)?.totalStars)
+        }
+    }
+
     private func recordDayIfComplete() {
         // 보너스 문제는 기록에 반영하지 않는다 (오늘 기록을 1문제 세션이 덮어쓰면 안 됨)
         guard session.isDayComplete, !isBonusPlay else { return }

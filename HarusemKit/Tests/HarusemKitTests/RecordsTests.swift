@@ -77,6 +77,27 @@ struct PlayerRecordsTests {
         #expect(records.streak(endingAt: "2026-01-02") == 4)
     }
 
+    @Test("최장 스트릭: 끊긴 구간이 있어도 역대 최고를 기억한다")
+    func longestStreak() {
+        var records = PlayerRecords()
+        #expect(records.longestStreak == 0)
+
+        // 3일 연속 → 하루 건너뜀 → 2일 연속
+        records.record(day("2026-06-01"))
+        records.record(day("2026-06-02"))
+        records.record(day("2026-06-03"))
+        records.record(day("2026-06-05"))
+        records.record(day("2026-06-06"))
+        #expect(records.longestStreak == 3)
+
+        // 연 경계를 넘는 4일 연속이 새로운 최고 기록
+        records.record(day("2025-12-30"))
+        records.record(day("2025-12-31"))
+        records.record(day("2026-01-01"))
+        records.record(day("2026-01-02"))
+        #expect(records.longestStreak == 4)
+    }
+
     @Test("Codable 라운드트립")
     func codableRoundTrip() throws {
         var records = PlayerRecords()

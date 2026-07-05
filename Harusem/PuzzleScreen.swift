@@ -6,6 +6,7 @@ struct PuzzleScreen: View {
     @State private var showSubmitConfirm = false
     @State private var showHelp = false
     @State private var showArchive = false
+    @State private var showStats = false
     @AppStorage("harusem.hasSeenHelp") private var hasSeenHelp = false
 
     private var session: DailySession { model.session }
@@ -49,6 +50,13 @@ struct PuzzleScreen: View {
                 HStack(alignment: .center, spacing: 12) {
                     ProgressHeader(session: session)
                     Button {
+                        showStats = true
+                    } label: {
+                        Image(systemName: "chart.bar")
+                            .font(.title3)
+                    }
+                    .accessibilityLabel(Text("Stats"))
+                    Button {
                         showArchive = true
                     } label: {
                         Image(systemName: "calendar")
@@ -76,6 +84,7 @@ struct PuzzleScreen: View {
         .sensoryFeedback(.success, trigger: session.game.isSolved)
         .sheet(isPresented: $showHelp) { HelpView() }
         .sheet(isPresented: $showArchive) { ArchiveView(model: model) }
+        .sheet(isPresented: $showStats) { StatsView(model: model) }
         .onAppear {
             if !hasSeenHelp {
                 showHelp = true
