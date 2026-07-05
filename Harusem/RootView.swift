@@ -13,12 +13,11 @@ struct RootView: View {
             }
         }
         .animation(.default, value: model.session.isDayComplete)
-        .task {
-            model.store.start()
-            model.ads.start()
-        }
+        .task { model.store.start() }
         .onChange(of: scenePhase) { _, phase in
             if phase == .active {
+                // ATT 팝업은 앱이 활성화된 뒤 요청해야 뜬다 (start는 1회 실행 가드 있음)
+                model.ads.start()
                 model.refreshForDateChange()
             } else {
                 model.save()

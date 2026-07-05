@@ -40,6 +40,8 @@ final class AdsService: NSObject {
     private(set) var rewardedReady = false
 
     private var started = false
+    private var loadingInterstitial = false
+    private var loadingRewarded = false
     private var onReward: (() -> Void)?
 
     /// 앱 시작 시 한 번: ATT 응답을 받은 뒤 SDK를 시작하고 광고를 미리 로드한다.
@@ -67,10 +69,19 @@ final class AdsService: NSObject {
     }
 
     private func loadInterstitial() {
-        // async API 사용: 완료 핸들러 방식은 Swift 6 격리 검사(sending 'ad')에 걸린다
+        // async API 사용: 완료 핸들러 방식은 Swift 6 격리 검사(sending 'ad')에 걸린다.
+        // no-fill/네트워크 오류 시 60초 간격으로 로드될 때까지 재시도한다.
+        guard !loadingInterstitial, interstitial == nil else { return }
+        loadingInterstitial = true
         Task {
-            interstitial = try? await InterstitialAd.load(
-                with: Self.interstitialUnitID, request: Request())
+            while interstitial == nil {
+                interstitial = try? await InterstitialAd.load(
+                    with: Self.interstitialUnitID, request: Request())
+                if interstitial == nil {
+                    try? await Task.sleep(for: .seconds(60))
+                }
+            }
+            loadingInterstitial = false
         }
     }
 
@@ -92,10 +103,18 @@ final class AdsService: NSObject {
     }
 
     private func loadRewarded() {
+        guard !loadingRewarded, rewarded == nil else { return }
+        loadingRewarded = true
         Task {
-            rewarded = try? await RewardedAd.load(
-                with: Self.rewardedUnitID, request: Request())
-            rewardedReady = rewarded != nil
+            while rewarded == nil {
+                rewarded = try? await RewardedAd.load(
+                    with: Self.rewardedUnitID, request: Request())
+                if rewarded == nil {
+                    try? await Task.sleep(for: .seconds(60))
+                }
+            }
+            rewardedReady = true
+            loadingRewarded = false
         }
     }
 

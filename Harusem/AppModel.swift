@@ -103,9 +103,14 @@ final class AppModel {
         clearHint()
         session.submitCurrent()
         recordDayIfComplete()
-        // 전면 광고는 오늘의 정규 5문제 완료 시에만 (보너스/아카이브 제외)
+        // 전면 광고는 오늘의 정규 5문제 완료 시에만 (보너스/아카이브 제외).
+        // 결과 화면 전환 애니메이션과 겹치지 않게 잠깐 기다렸다 띄운다.
         if session.isDayComplete, !isBonusPlay, !isArchivePlay {
-            ads.showInterstitialAfterDayComplete(adsRemoved: store.ownsRemoveAds)
+            let adsRemoved = store.ownsRemoveAds
+            Task {
+                try? await Task.sleep(for: .seconds(0.7))
+                ads.showInterstitialAfterDayComplete(adsRemoved: adsRemoved)
+            }
         }
         save()
     }
