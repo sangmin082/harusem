@@ -18,6 +18,9 @@ final class AppModel {
     private(set) var isArchivePlay = false
     /// 보너스 문제(광고 보고 한 문제 더) 플레이 중인지. 기록/스냅샷에 영향을 주지 않는다.
     private(set) var isBonusPlay = false
+    /// 이번 세션 입장 비용을 이미 지불했는지 (다시 플레이 = 하트 선차감).
+    /// true면 하트 0이어도 플레이 차단하지 않는다.
+    private(set) var entryPaid = false
     /// 현재 표시 중인 힌트 (병합/undo/리셋 시 사라짐).
     private(set) var currentHint: SolutionStep?
     /// 힌트를 눌렀지만 현재 상태에서 도달 불가한 경우.
@@ -150,6 +153,7 @@ final class AppModel {
         selection = TileSelection()
         clearHint()
         isBonusPlay = false
+        entryPaid = false
         session = Self.loadOrCreateSession(defaults: defaults, now: now)
     }
 
@@ -181,10 +185,31 @@ final class AppModel {
     var hearts: Int { heartBank.hearts }
 
     /// 하트가 없어 새 플레이를 시작할 수 없는 상태.
-    /// 이미 진행 중인 판(이동 있음)이나 완료된 하루, 보너스(광고로 입장)는 막지 않는다.
+    /// 이미 진행 중인 판(이동 있음), 완료된 하루, 보너스(광고 입장), 선차감된 다시 플레이는 막지 않는다.
     var needsHeartToPlay: Bool {
-        hearts == 0 && !isBonusPlay && !session.isDayComplete
+        hearts == 0 && !isBonusPlay && !entryPaid && !session.isDayComplete
             && session.currentIndex == 0 && session.game.moves.isEmpty
+    }
+
+    /// 하트 1개를 선차감하고 해당 날짜를 처음부터 다시 플레이한다 (오늘 포함).
+    /// 하트가 없거나 잠긴 날짜면 false.
+    @discardableResult
+    func replay(dateKey: String) -> Bool {
+        let today = PuzzleGenerator.dateKey(for: .now)
+        guard dateKey == today || (dateKey < today && !isArchiveLocked(dateKey)) else { return false }
+        guard let daily = try? PuzzleGenerator().puzzles(for: dateKey) else { return false }
+        refreshHearts()
+        guard heartBank.spend(now: Date.now.timeIntervalSince1970) else { return false }
+        saveHearts()
+
+        selection = TileSelection()
+        clearHint()
+        isBonusPlay = false
+        isArchivePlay = dateKey != today
+        entryPaid = true
+        session = DailySession(daily: daily)
+        save()  // 오늘이면 새 진행 스냅샷으로 교체
+        return true
     }
 
     /// 다음 하트까지 남은 분 (가득이면 nil).
@@ -300,6 +325,7 @@ final class AppModel {
         session = DailySession(daily: daily)
         isArchivePlay = true
         isBonusPlay = false  // 보너스 플레이 중 캘린더로 진입하는 경로 정리
+        entryPaid = false  // 첫 도전은 무료 시작 (완료 시 규칙으로만 차감)
     }
 
     /// 아카이브에서 나와 오늘 세션으로 복귀.
@@ -308,6 +334,7 @@ final class AppModel {
         selection = TileSelection()
         clearHint()
         isArchivePlay = false
+        entryPaid = false
         session = Self.loadOrCreateSession(defaults: defaults, now: now)
     }
 
@@ -375,6 +402,7 @@ final class AppModel {
         else { return }
         selection = TileSelection()
         clearHint()
+        entryPaid = false
         session = Self.loadOrCreateSession(defaults: defaults, now: now)
     }
 

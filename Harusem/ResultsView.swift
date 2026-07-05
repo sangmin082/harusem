@@ -4,8 +4,29 @@ import HarusemKit
 /// 하루 5문제 완료 후 결과 요약 + 공유.
 struct ResultsView: View {
     var model: AppModel
+    @State private var showHearts = false
 
     private var session: DailySession { model.session }
+
+    /// 다시 플레이 (하트 1개 소비). 부족하면 하트 시트 안내.
+    private var replayButton: some View {
+        Button {
+            if !model.replay(dateKey: session.daily.dateKey) {
+                showHearts = true
+            }
+        } label: {
+            HStack(spacing: 6) {
+                Label("Play again", systemImage: "arrow.counterclockwise")
+                HStack(spacing: 2) {
+                    Image(systemName: "heart.fill")
+                        .foregroundStyle(.red)
+                    Text(verbatim: "1")
+                }
+                .font(.caption.bold())
+            }
+        }
+        .buttonStyle(.bordered)
+    }
 
     var body: some View {
         VStack(spacing: 24) {
@@ -83,6 +104,8 @@ struct ResultsView: View {
                     Label("Back to today", systemImage: "chevron.left")
                 }
                 .buttonStyle(.borderedProminent)
+
+                replayButton
             } else {
                 ShareLink(item: model.shareTextWithStreak) {
                     Label("Share result", systemImage: "square.and.arrow.up")
@@ -98,6 +121,8 @@ struct ResultsView: View {
                 .buttonStyle(.bordered)
                 .disabled(!model.ads.rewardedReady)
 
+                replayButton
+
                 if model.records.daysPlayed > 1 {
                     Text("Days played: \(model.records.daysPlayed) · Total stars: \(model.records.totalStars)")
                         .font(.footnote)
@@ -112,5 +137,6 @@ struct ResultsView: View {
             Spacer()
         }
         .padding(24)
+        .sheet(isPresented: $showHearts) { HeartsView(model: model) }
     }
 }

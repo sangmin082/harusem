@@ -44,8 +44,15 @@ struct CalendarTab: View {
                         Button {
                             if locked {
                                 showPaywall = true
-                            } else if model.hearts == 0 && (record?.totalStars ?? 0) < 15 {
-                                // 만점이 아닌 날짜의 새 도전은 하트가 필요하다
+                            } else if record != nil {
+                                // 이미 완료한 날짜 → 다시 플레이 (하트 1개 선차감)
+                                if model.replay(dateKey: dateKey) {
+                                    goHome()
+                                } else {
+                                    showHearts = true
+                                }
+                            } else if model.hearts == 0 {
+                                // 첫 도전도 하트가 있어야 시작할 수 있다
                                 showHearts = true
                             } else {
                                 model.enterArchive(dateKey: dateKey)
@@ -91,6 +98,11 @@ private struct ArchiveRow: View {
             }
             if locked {
                 Image(systemName: "lock.fill")
+                    .foregroundStyle(.secondary)
+            } else if record != nil {
+                // 완료된 날짜: 다시 플레이 (하트 1개)
+                Image(systemName: "arrow.counterclockwise")
+                    .font(.caption)
                     .foregroundStyle(.secondary)
             } else {
                 Image(systemName: "chevron.right")

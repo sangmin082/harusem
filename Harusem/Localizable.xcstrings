@@ -321,6 +321,16 @@
         }
       }
     },
+    "Imperfect days and replays cost one heart. Hearts refill every 30 minutes.": {
+      "localizations": {
+        "ko": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "별 3개를 못 채운 날과 다시 플레이는 하트 1개! 하트는 30분마다 충전돼요."
+          }
+        }
+      }
+    },
     "Keep trying": {
       "localizations": {
         "ko": {
@@ -427,6 +437,16 @@
           "stringUnit": {
             "state": "translated",
             "value": "퍼펙트 데이"
+          }
+        }
+      }
+    },
+    "Play again": {
+      "localizations": {
+        "ko": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "다시 플레이"
           }
         }
       }

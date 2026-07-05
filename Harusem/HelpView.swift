@@ -21,7 +21,7 @@ struct HelpView: View {
             ruleRow("arrow.uturn.backward",
                     "Undo anytime. Five puzzles a day, harder as you go.")
             ruleRow("heart.fill",
-                    "A day finished without all 3 stars costs one heart. Hearts refill every 30 minutes.")
+                    "Imperfect days and replays cost one heart. Hearts refill every 30 minutes.")
 
             Spacer()
 
