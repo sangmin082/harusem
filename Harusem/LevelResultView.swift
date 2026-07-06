@@ -129,6 +129,25 @@ struct LevelResultView: View {
             Spacer()
         }
         .padding(24)
+        .overlay(alignment: .topLeading) {
+            // 홈(레벨 맵)으로 복귀
+            Button {
+                model.exitToHome()
+            } label: {
+                Image(systemName: "chevron.left")
+                    .font(.system(size: 15, weight: .semibold))
+                    .foregroundStyle(Theme.brand)
+                    .frame(width: 34, height: 34)
+                    .background(
+                        Circle().fill(Theme.surface)
+                            .overlay(Circle().strokeBorder(Theme.hairline))
+                    )
+            }
+            .buttonStyle(.plain)
+            .accessibilityLabel(Text("Back"))
+            .padding(.leading, 20)
+            .padding(.top, 8)
+        }
         .onAppear {
             withAnimation(.spring(duration: 0.5)) {
                 appeared = true

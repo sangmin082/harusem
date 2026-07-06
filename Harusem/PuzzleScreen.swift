@@ -17,6 +17,21 @@ struct PuzzleScreen: View {
     var body: some View {
         VStack(spacing: 18) {
             HStack(alignment: .center, spacing: 10) {
+                Button {
+                    model.exitToHome()
+                } label: {
+                    Image(systemName: "chevron.left")
+                        .font(.system(size: 15, weight: .semibold))
+                        .foregroundStyle(Theme.brand)
+                        .frame(width: 34, height: 34)
+                        .background(
+                            Circle().fill(Theme.surface)
+                                .overlay(Circle().strokeBorder(Theme.hairline))
+                        )
+                }
+                .buttonStyle(.plain)
+                .accessibilityLabel(Text("Back"))
+
                 Text("Level \(model.level)")
                     .font(.title3.bold())
                 if let best = model.bestStarsForCurrentLevel {

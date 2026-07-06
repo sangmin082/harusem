@@ -27,6 +27,8 @@ final class AppModel {
     private(set) var currentHint: SolutionStep?
     /// 힌트를 눌렀지만 현재 상태에서 도달 불가한 경우.
     private(set) var hintDeadEnd = false
+    /// 홈에서 레벨 박스를 눌러 플레이 화면에 들어와 있는지 (홈 = 레벨 맵).
+    private(set) var isPlaying = false
 
     /// 하루 무료 힌트 수. 소진 후는 리워드 광고로 충전.
     static let dailyHintAllowance = 3
@@ -176,11 +178,24 @@ final class AppModel {
 
     // MARK: - 레벨 이동
 
-    /// 레벨 목록에서 선택. 진행 중인 현재 레벨을 다시 누르면 이어한다 (리셋하지 않음).
+    /// 레벨 목록/홈 맵에서 선택 → 플레이 화면 진입.
+    /// 진행 중인 현재 레벨을 다시 누르면 이어한다 (리셋하지 않음).
     func openLevel(_ n: Int) {
         guard (1...maxLevel).contains(n) else { return }
+        isPlaying = true
         if n == level, !session.isDayComplete { return }
         startLevel(n)
+    }
+
+    /// 플레이 화면에서 홈(레벨 맵)으로 복귀. 진행 상태는 저장된다.
+    func exitToHome() {
+        isPlaying = false
+        save()
+    }
+
+    /// 현재 레벨에 진행 중인 이동이 있는지 (홈 카드의 "이어하기" 표기용).
+    var hasProgress: Bool {
+        !session.isDayComplete && !session.game.moves.isEmpty
     }
 
     /// 방금 클리어한 레벨의 다음 레벨로.

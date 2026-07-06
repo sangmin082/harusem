@@ -28,10 +28,13 @@ struct RootView: View {
                 .tag(Tab.settings)
         }
         .safeAreaInset(edge: .top, spacing: 0) {
-            // 상단 고정 상태 바: 레벨/별/스트릭 + 하트/충전 카운트다운 (모든 탭 공통)
+            // 상단 고정 상태 바: 별/스트릭 + 하트 잔량/충전 카운트다운 (모든 탭 공통).
+            // 배경(.bar)이 노치 영역까지 채워 아래 콘텐츠와 겹치지 않는다.
             StatusBar(model: model) { showHearts = true }
                 .padding(.horizontal, 20)
-                .padding(.bottom, 6)
+                .padding(.vertical, 8)
+                .background(.bar)
+                .overlay(alignment: .bottom) { Divider() }
         }
         .sheet(isPresented: $showHearts) { HeartsView(model: model) }
         .onReceive(heartTimer) { _ in
@@ -51,13 +54,17 @@ struct RootView: View {
 
     private var homeTab: some View {
         Group {
-            if model.session.isDayComplete {
+            if !model.isPlaying {
+                // 홈 = 레벨 맵. 박스를 눌러야 플레이 화면으로 들어간다.
+                LevelHomeView(model: model)
+            } else if model.session.isDayComplete {
                 LevelResultView(model: model)
             } else {
                 PuzzleScreen(model: model)
             }
         }
         .animation(.default, value: model.session.isDayComplete)
+        .animation(.default, value: model.isPlaying)
     }
 }
 

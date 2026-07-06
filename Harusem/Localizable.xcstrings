@@ -61,6 +61,16 @@
         }
       }
     },
+    "Back": {
+      "localizations": {
+        "ko": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "뒤로"
+          }
+        }
+      }
+    },
     "Back to results": {
       "localizations": {
         "ko": {
@@ -757,6 +767,16 @@
           "stringUnit": {
             "state": "translated",
             "value": "빼기"
+          }
+        }
+      }
+    },
+    "Tap to play": {
+      "localizations": {
+        "ko": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "탭해서 플레이"
           }
         }
       }

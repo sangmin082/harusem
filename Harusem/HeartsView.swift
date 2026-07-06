@@ -8,17 +8,6 @@ struct StatusBar: View {
 
     var body: some View {
         HStack(spacing: 8) {
-            // 현재 레벨 (브랜드 그라디언트 칩)
-            Text(verbatim: "Lv.\(model.level)")
-                .font(.subheadline)
-                .monospacedDigit()
-                .fontWeight(.bold)
-                .foregroundStyle(.white)
-                .padding(.horizontal, 12)
-                .padding(.vertical, 6)
-                .background(Capsule().fill(Theme.brandGradient))
-                .accessibilityLabel(Text("Level \(model.level)"))
-
             // 모은 별 합계
             HStack(spacing: 4) {
                 StarIcon(size: 13)
@@ -61,7 +50,7 @@ struct HeartChip: View {
             TimelineView(.periodic(from: .now, by: 1)) { context in
                 HStack(spacing: 4) {
                     HeartIcon(size: 14)
-                    Text(verbatim: "\(model.hearts)")
+                    Text(verbatim: "\(model.hearts)/\(HeartBank.capacity)")
                         .monospacedDigit()
                         .fontWeight(.semibold)
                     if let countdown = model.nextHeartCountdown(now: context.date) {
