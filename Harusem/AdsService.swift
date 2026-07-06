@@ -1,7 +1,7 @@
 import Foundation
 import Observation
 import AppTrackingTransparency
-import GoogleMobileAds
+@preconcurrency import GoogleMobileAds
 import UIKit
 
 /// AdMob 광고: 전면(5문제 완료 후 1회) + 리워드(힌트 충전).
