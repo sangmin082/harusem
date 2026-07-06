@@ -5,46 +5,34 @@ import SwiftUI
 enum Theme {
     // MARK: - 팔레트
 
-    /// 브랜드 (인디고). 앱 아이콘의 네이비 타일과 같은 계열.
-    static let brand = Color(light: UIColor(red: 0.345, green: 0.337, blue: 0.839, alpha: 1),
-                             dark: UIColor(red: 0.545, green: 0.537, blue: 1.0, alpha: 1))
-    static let brandDeep = Color(light: UIColor(red: 0.235, green: 0.227, blue: 0.690, alpha: 1),
-                                 dark: UIColor(red: 0.404, green: 0.396, blue: 0.910, alpha: 1))
+    // 밝고 쨍한 캔디 톤 팔레트 (앱은 라이트 모드 고정 — 어린이 취향의 화사한 톤 유지).
 
-    /// 별 (골드).
-    static let gold = Color(light: UIColor(red: 1.0, green: 0.773, blue: 0.161, alpha: 1),
-                            dark: UIColor(red: 1.0, green: 0.812, blue: 0.250, alpha: 1))
-    static let goldDeep = Color(light: UIColor(red: 1.0, green: 0.584, blue: 0.0, alpha: 1),
-                                dark: UIColor(red: 1.0, green: 0.624, blue: 0.039, alpha: 1))
+    /// 브랜드 (캔디 퍼플블루).
+    static let brand = UIColor(red: 0.416, green: 0.353, blue: 0.878, alpha: 1).asColor
+    static let brandDeep = UIColor(red: 0.306, green: 0.247, blue: 0.820, alpha: 1).asColor
 
-    /// 하트 (레드/핑크).
-    static let heart = Color(light: UIColor(red: 1.0, green: 0.216, blue: 0.373, alpha: 1),
-                             dark: UIColor(red: 1.0, green: 0.269, blue: 0.420, alpha: 1))
-    static let heartDeep = Color(light: UIColor(red: 0.827, green: 0.078, blue: 0.220, alpha: 1),
-                                 dark: UIColor(red: 0.878, green: 0.129, blue: 0.271, alpha: 1))
+    /// 별 (해바라기 골드).
+    static let gold = UIColor(red: 1.0, green: 0.788, blue: 0.235, alpha: 1).asColor
+    static let goldDeep = UIColor(red: 1.0, green: 0.651, blue: 0.169, alpha: 1).asColor
 
-    /// 스트릭 (오렌지).
-    static let flame = Color(light: UIColor(red: 1.0, green: 0.624, blue: 0.039, alpha: 1),
-                             dark: UIColor(red: 1.0, green: 0.663, blue: 0.078, alpha: 1))
-    static let flameDeep = Color(light: UIColor(red: 1.0, green: 0.271, blue: 0.188, alpha: 1),
-                                 dark: UIColor(red: 1.0, green: 0.310, blue: 0.227, alpha: 1))
+    /// 하트 (버블검 핑크).
+    static let heart = UIColor(red: 1.0, green: 0.420, blue: 0.616, alpha: 1).asColor
+    static let heartDeep = UIColor(red: 0.941, green: 0.243, blue: 0.431, alpha: 1).asColor
 
-    static let success = Color(light: UIColor(red: 0.204, green: 0.780, blue: 0.349, alpha: 1),
-                               dark: UIColor(red: 0.188, green: 0.820, blue: 0.345, alpha: 1))
-    static let successDeep = Color(light: UIColor(red: 0.086, green: 0.596, blue: 0.239, alpha: 1),
-                                   dark: UIColor(red: 0.098, green: 0.663, blue: 0.267, alpha: 1))
+    /// 스트릭 (귤 오렌지).
+    static let flame = UIColor(red: 1.0, green: 0.624, blue: 0.271, alpha: 1).asColor
+    static let flameDeep = UIColor(red: 1.0, green: 0.420, blue: 0.208, alpha: 1).asColor
 
-    /// 청록 (연산자/배지 순환용).
-    static let teal = Color(light: UIColor(red: 0.110, green: 0.714, blue: 0.671, alpha: 1),
-                            dark: UIColor(red: 0.251, green: 0.831, blue: 0.780, alpha: 1))
-    static let tealDeep = Color(light: UIColor(red: 0.0, green: 0.541, blue: 0.549, alpha: 1),
-                                dark: UIColor(red: 0.051, green: 0.651, blue: 0.620, alpha: 1))
+    static let success = UIColor(red: 0.298, green: 0.851, blue: 0.482, alpha: 1).asColor
+    static let successDeep = UIColor(red: 0.169, green: 0.706, blue: 0.361, alpha: 1).asColor
 
-    /// 보라 (연산자/배지 순환용).
-    static let purple = Color(light: UIColor(red: 0.686, green: 0.322, blue: 0.871, alpha: 1),
-                              dark: UIColor(red: 0.753, green: 0.439, blue: 0.929, alpha: 1))
-    static let purpleDeep = Color(light: UIColor(red: 0.537, green: 0.173, blue: 0.749, alpha: 1),
-                                  dark: UIColor(red: 0.600, green: 0.278, blue: 0.820, alpha: 1))
+    /// 청록 (민트).
+    static let teal = UIColor(red: 0.208, green: 0.816, blue: 0.729, alpha: 1).asColor
+    static let tealDeep = UIColor(red: 0.059, green: 0.663, blue: 0.557, alpha: 1).asColor
+
+    /// 보라 (라일락).
+    static let purple = UIColor(red: 0.694, green: 0.365, blue: 1.0, alpha: 1).asColor
+    static let purpleDeep = UIColor(red: 0.557, green: 0.239, blue: 0.878, alpha: 1).asColor
 
     // MARK: - 그라디언트
 
@@ -88,49 +76,51 @@ enum Theme {
 
     // MARK: - 서피스
 
-    /// 카드/타일의 기본 표면색.
-    static let surface = Color(.secondarySystemBackground)
+    /// 카드/타일의 기본 표면색 — 컬러 배경 위에 뜨는 순백 카드.
+    static let surface = Color.white
+    /// 본문 잉크 (짙은 네이비 — 순검정보다 부드럽다).
+    static let ink = UIColor(red: 0.20, green: 0.20, blue: 0.35, alpha: 1).asColor
     /// 표면 위에 얹는 아주 옅은 외곽선 (입체감).
-    static let hairline = Color.primary.opacity(0.06)
+    static let hairline = Color.black.opacity(0.05)
 }
 
-extension Color {
-    /// 라이트/다크 각각 지정하는 동적 색.
-    init(light: UIColor, dark: UIColor) {
-        self.init(uiColor: UIColor { traits in
-            traits.userInterfaceStyle == .dark ? dark : light
-        })
-    }
+extension UIColor {
+    var asColor: Color { Color(uiColor: self) }
 }
 
-/// 알록달록 앱 배경: 베이스 위에 크게 흐린 컬러 블롭 4개.
+/// 알록달록 앱 배경: 밝은 크림 베이스 위에 선명한 캔디 블롭.
 /// 모든 화면 뒤에 깔린다 (리스트는 scrollContentBackground(.hidden)으로 비춰 보이게).
 struct AppBackground: View {
     var body: some View {
         ZStack {
-            Color(.systemBackground)
+            // 밝은 크림빛 베이스 (순백보다 따뜻하게)
+            Color(uiColor: UIColor(red: 1.0, green: 0.985, blue: 0.955, alpha: 1))
             GeometryReader { geo in
                 let w = geo.size.width
                 let h = geo.size.height
                 ZStack {
                     Circle()
-                        .fill(Theme.brand.opacity(0.20))
+                        .fill(Theme.brand.opacity(0.30))
                         .frame(width: w * 0.95, height: w * 0.95)
                         .offset(x: -w * 0.32, y: -h * 0.30)
                     Circle()
-                        .fill(Theme.heart.opacity(0.14))
+                        .fill(Theme.heart.opacity(0.28))
                         .frame(width: w * 0.85, height: w * 0.85)
                         .offset(x: w * 0.42, y: -h * 0.16)
                     Circle()
-                        .fill(Theme.gold.opacity(0.15))
+                        .fill(Theme.gold.opacity(0.30))
                         .frame(width: w * 0.85, height: w * 0.85)
                         .offset(x: w * 0.38, y: h * 0.34)
                     Circle()
-                        .fill(Theme.teal.opacity(0.16))
+                        .fill(Theme.teal.opacity(0.28))
                         .frame(width: w * 0.95, height: w * 0.95)
                         .offset(x: -w * 0.38, y: h * 0.22)
+                    Circle()
+                        .fill(Theme.purple.opacity(0.18))
+                        .frame(width: w * 0.7, height: w * 0.7)
+                        .offset(x: 0, y: h * 0.02)
                 }
-                .blur(radius: 72)
+                .blur(radius: 64)
             }
         }
         .ignoresSafeArea()
