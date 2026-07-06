@@ -141,6 +141,16 @@
         }
       }
     },
+    "Continue": {
+      "localizations": {
+        "ko": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "이어하기"
+          }
+        }
+      }
+    },
     "Current streak": {
       "localizations": {
         "ko": {

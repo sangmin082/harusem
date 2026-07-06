@@ -8,41 +8,39 @@ struct StatusBar: View {
 
     var body: some View {
         HStack(spacing: 8) {
-            // 현재 레벨
+            // 현재 레벨 (브랜드 그라디언트 칩)
             Text(verbatim: "Lv.\(model.level)")
-                .monospacedDigit()
-                .fontWeight(.semibold)
                 .font(.subheadline)
-                .padding(.horizontal, 10)
-                .padding(.vertical, 5)
-                .background(Capsule().fill(Color(.secondarySystemBackground)))
+                .monospacedDigit()
+                .fontWeight(.bold)
+                .foregroundStyle(.white)
+                .padding(.horizontal, 12)
+                .padding(.vertical, 6)
+                .background(Capsule().fill(Theme.brandGradient))
                 .accessibilityLabel(Text("Level \(model.level)"))
 
             // 모은 별 합계
-            HStack(spacing: 3) {
-                Image(systemName: "star.fill")
-                    .foregroundStyle(.yellow)
+            HStack(spacing: 4) {
+                StarIcon(size: 13)
                 Text(verbatim: "\(model.totalStarsEarned)")
                     .monospacedDigit()
                     .fontWeight(.semibold)
             }
             .font(.subheadline)
-            .padding(.horizontal, 10)
-            .padding(.vertical, 5)
-            .background(Capsule().fill(Color(.secondarySystemBackground)))
+            .chipBackground()
+            .accessibilityElement(children: .ignore)
             .accessibilityLabel(Text("Total stars: \(model.totalStarsEarned)"))
 
             if model.currentStreak > 1 {
-                HStack(spacing: 3) {
-                    Text(verbatim: "🔥")
+                HStack(spacing: 4) {
+                    FlameIcon(size: 13)
                     Text(verbatim: "\(model.currentStreak)")
                         .monospacedDigit()
                         .fontWeight(.semibold)
                 }
                 .font(.subheadline)
-                .padding(.horizontal, 10)
-                .padding(.vertical, 5)
-                .background(Capsule().fill(Color(.secondarySystemBackground)))
+                .chipBackground()
+                .accessibilityElement(children: .ignore)
                 .accessibilityLabel(Text("\(model.currentStreak) day streak"))
             }
 
@@ -62,8 +60,7 @@ struct HeartChip: View {
         Button(action: action) {
             TimelineView(.periodic(from: .now, by: 1)) { context in
                 HStack(spacing: 4) {
-                    Image(systemName: "heart.fill")
-                        .foregroundStyle(.red)
+                    HeartIcon(size: 14)
                     Text(verbatim: "\(model.hearts)")
                         .monospacedDigit()
                         .fontWeight(.semibold)
@@ -76,9 +73,7 @@ struct HeartChip: View {
                 }
                 .font(.subheadline)
             }
-            .padding(.horizontal, 10)
-            .padding(.vertical, 5)
-            .background(Capsule().fill(Color(.secondarySystemBackground)))
+            .chipBackground()
         }
         .buttonStyle(.plain)
         .accessibilityLabel(Text("Hearts: \(model.hearts)"))
@@ -91,7 +86,7 @@ struct HeartsView: View {
     @Environment(\.dismiss) private var dismiss
 
     private let timer = Timer.publish(every: 5, on: .main, in: .common).autoconnect()
-    private let columns = Array(repeating: GridItem(.flexible(), spacing: 6), count: 5)
+    private let columns = Array(repeating: GridItem(.flexible(), spacing: 8), count: 5)
 
     var body: some View {
         VStack(spacing: 20) {
@@ -99,14 +94,16 @@ struct HeartsView: View {
                 .font(.title2.bold())
                 .padding(.top, 24)
 
-            LazyVGrid(columns: columns, spacing: 6) {
+            LazyVGrid(columns: columns, spacing: 10) {
                 ForEach(0..<HeartBank.capacity, id: \.self) { index in
-                    Image(systemName: index < model.hearts ? "heart.fill" : "heart")
-                        .font(.system(size: 26))
-                        .foregroundStyle(.red)
+                    HeartIcon(filled: index < model.hearts, size: 30)
                 }
             }
-            .padding(.horizontal, 32)
+            .padding(.vertical, 14)
+            .padding(.horizontal, 20)
+            .harusemCard()
+            .padding(.horizontal, 12)
+            .accessibilityElement(children: .ignore)
             .accessibilityLabel(Text("Hearts: \(model.hearts)"))
 
             TimelineView(.periodic(from: .now, by: 1)) { context in
@@ -129,12 +126,11 @@ struct HeartsView: View {
             Button {
                 model.refillHeartViaAd()
             } label: {
-                Label("Watch an ad to refill a heart", systemImage: "play.rectangle")
-                    .frame(maxWidth: .infinity)
+                Label("Watch an ad to refill a heart", systemImage: "play.rectangle.fill")
             }
-            .buttonStyle(.borderedProminent)
-            .controlSize(.large)
+            .buttonStyle(ProminentButtonStyle())
             .disabled(!model.ads.rewardedReady || model.hearts >= HeartBank.capacity)
+            .opacity(!model.ads.rewardedReady || model.hearts >= HeartBank.capacity ? 0.5 : 1)
 
             Spacer()
         }

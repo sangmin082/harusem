@@ -29,10 +29,8 @@ struct HelpView: View {
                 dismiss()
             } label: {
                 Text("Got it")
-                    .frame(maxWidth: .infinity)
             }
-            .buttonStyle(.borderedProminent)
-            .controlSize(.large)
+            .buttonStyle(ProminentButtonStyle())
         }
         .padding(24)
         .presentationDetents([.medium, .large])
@@ -41,9 +39,10 @@ struct HelpView: View {
     private func ruleRow(_ icon: String, _ text: LocalizedStringKey) -> some View {
         HStack(alignment: .top, spacing: 12) {
             Image(systemName: icon)
-                .font(.title3)
-                .foregroundStyle(Color.accentColor)
-                .frame(width: 28)
+                .font(.system(size: 15, weight: .semibold))
+                .foregroundStyle(.white)
+                .frame(width: 32, height: 32)
+                .background(RoundedRectangle(cornerRadius: 8).fill(Theme.brandGradient))
             Text(text)
                 .fixedSize(horizontal: false, vertical: true)
         }

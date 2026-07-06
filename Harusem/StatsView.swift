@@ -13,12 +13,12 @@ struct StatsView: View {
         NavigationStack {
             List {
                 Section {
-                    statRow("🏔️", "Highest level", model.maxLevel)
-                    statRow("✅", "Levels cleared", model.levelsCleared)
-                    statRow("⭐️", "Total stars", model.totalStarsEarned)
-                    statRow("💯", "Perfect levels", model.perfectLevels)
-                    statRow("🔥", "Current streak", model.currentStreak)
-                    statRow("📅", "Days played", model.daysPlayed)
+                    statRow("crown.fill", Theme.goldGradient, "Highest level", model.maxLevel)
+                    statRow("checkmark.seal.fill", greenGradient, "Levels cleared", model.levelsCleared)
+                    statRow("star.fill", Theme.goldGradient, "Total stars", model.totalStarsEarned)
+                    statRow("sparkles", Theme.brandGradient, "Perfect levels", model.perfectLevels)
+                    statRow("flame.fill", Theme.flameGradient, "Current streak", model.currentStreak)
+                    statRow("calendar", blueGradient, "Days played", model.daysPlayed)
                 }
 
                 Section {
@@ -93,9 +93,20 @@ struct StatsView: View {
         }
     }
 
-    private func statRow(_ emoji: String, _ title: LocalizedStringKey, _ value: Int) -> some View {
-        HStack {
-            Text(verbatim: emoji)
+    private var greenGradient: LinearGradient {
+        LinearGradient(colors: [Theme.success, Theme.success.opacity(0.75)],
+                       startPoint: .top, endPoint: .bottom)
+    }
+
+    private var blueGradient: LinearGradient {
+        LinearGradient(colors: [Color(.systemBlue), Color(.systemTeal)],
+                       startPoint: .top, endPoint: .bottom)
+    }
+
+    private func statRow(_ symbol: String, _ gradient: LinearGradient,
+                         _ title: LocalizedStringKey, _ value: Int) -> some View {
+        HStack(spacing: 12) {
+            StatBadge(systemName: symbol, gradient: gradient)
             Text(title)
             Spacer()
             Text(verbatim: "\(value)")
@@ -120,7 +131,7 @@ struct StatsView: View {
     private func cellColor(cleared: Int?) -> Color {
         guard let cleared else { return Color(.systemFill) }
         let ratio = min(1, Double(cleared) / 5.0)
-        return Color.yellow.opacity(0.2 + 0.8 * ratio)
+        return Theme.gold.opacity(0.25 + 0.75 * ratio)
     }
 
     @ViewBuilder

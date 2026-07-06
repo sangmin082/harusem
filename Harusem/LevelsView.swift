@@ -55,30 +55,36 @@ private struct LevelRow: View {
     let locked: Bool
 
     var body: some View {
-        HStack(spacing: 12) {
+        HStack(spacing: 14) {
+            // 레벨 번호 배지: 현재 = 브랜드, 클리어 = 골드, 잠김 = 회색
             Text(verbatim: "\(level)")
-                .font(.headline)
+                .font(.system(.headline, design: .rounded, weight: .bold))
                 .monospacedDigit()
+                .minimumScaleFactor(0.5)
                 .frame(width: 44, height: 44)
-                .background(
-                    Circle().fill(isCurrent ? Color.accentColor : Color(.secondarySystemBackground))
-                )
-                .foregroundStyle(isCurrent ? Color.white : Color.primary)
+                .background(badgeBackground)
+                .foregroundStyle(badgeForeground)
 
-            Text("Level \(level)")
-                .fontWeight(isCurrent ? .semibold : .regular)
+            VStack(alignment: .leading, spacing: 3) {
+                Text("Level \(level)")
+                    .fontWeight(isCurrent ? .bold : .medium)
+                if isCurrent {
+                    Text("Continue")
+                        .font(.caption)
+                        .foregroundStyle(Theme.brand)
+                }
+            }
 
             Spacer()
 
             if let stars {
-                Text(verbatim: String(repeating: "★", count: stars)
-                     + String(repeating: "☆", count: 3 - stars))
-                    .foregroundStyle(.yellow)
+                StarsRow(earned: stars, size: 14)
             }
 
             if locked {
                 Image(systemName: "lock.fill")
-                    .foregroundStyle(.secondary)
+                    .font(.caption)
+                    .foregroundStyle(.tertiary)
             } else if stars != nil {
                 // 클리어한 레벨: 다시 플레이
                 Image(systemName: "arrow.counterclockwise")
@@ -86,11 +92,31 @@ private struct LevelRow: View {
                     .foregroundStyle(.secondary)
             } else {
                 Image(systemName: "chevron.right")
-                    .font(.caption)
-                    .foregroundStyle(.tertiary)
+                    .font(.caption.weight(.semibold))
+                    .foregroundStyle(isCurrent ? Theme.brand : Color(.tertiaryLabel))
             }
         }
+        .padding(.vertical, 2)
         .contentShape(Rectangle())
         .opacity(locked ? 0.45 : 1)
+    }
+
+    private var badgeBackground: some View {
+        ZStack {
+            if isCurrent {
+                Circle().fill(Theme.brandGradient)
+                    .shadow(color: Theme.brand.opacity(0.35), radius: 6, y: 3)
+            } else if stars != nil {
+                Circle().fill(Theme.goldGradient)
+            } else {
+                Circle().fill(Theme.surface)
+                    .overlay(Circle().strokeBorder(Theme.hairline))
+            }
+        }
+    }
+
+    private var badgeForeground: Color {
+        if isCurrent || stars != nil { return .white }
+        return locked ? Color(.tertiaryLabel) : .primary
     }
 }
