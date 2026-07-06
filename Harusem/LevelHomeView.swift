@@ -79,8 +79,8 @@ private struct LockedLevelCard: View {
                 .foregroundStyle(Color(.tertiaryLabel))
                 .frame(width: 42, height: 42)
                 .background(
-                    Circle().fill(Theme.surface)
-                        .overlay(Circle().strokeBorder(Theme.hairline))
+                    RoundedRectangle(cornerRadius: 15).fill(Theme.surface)
+                        .overlay(RoundedRectangle(cornerRadius: 15).strokeBorder(Theme.hairline))
                 )
 
             Text("Level \(level)")
@@ -89,9 +89,7 @@ private struct LockedLevelCard: View {
 
             Spacer()
 
-            Image(systemName: "lock.fill")
-                .font(.subheadline)
-                .foregroundStyle(.tertiary)
+            LockIcon(size: 18)
         }
         .padding(.horizontal, 16)
         .padding(.vertical, 13)
@@ -117,7 +115,10 @@ private struct CurrentLevelCard: View {
                     .minimumScaleFactor(0.5)
                     .foregroundStyle(Theme.brand)
                     .frame(width: 60, height: 60)
-                    .background(Circle().fill(Color.white))
+                    .background(
+                        RoundedRectangle(cornerRadius: 20).fill(Color.white)
+                            .shadow(color: .black.opacity(0.12), radius: 3, y: 2)
+                    )
 
                 VStack(alignment: .leading, spacing: 4) {
                     Text("Level \(level)")
@@ -133,16 +134,17 @@ private struct CurrentLevelCard: View {
                     PlaysChip(remaining: playsRemaining, onDark: true)
                 }
 
-                Image(systemName: "play.circle.fill")
-                    .font(.system(size: 40))
+                PlayIcon(size: 42)
             }
             .foregroundStyle(.white)
             .padding(20)
-            .background(
-                RoundedRectangle(cornerRadius: 22)
-                    .fill(Theme.brandGradient)
-                    .shadow(color: Theme.brand.opacity(0.35), radius: 12, y: 6)
-            )
+            .candySurface(fill: Theme.brandGradient, edge: Theme.brandDeep,
+                          cornerRadius: 24, depth: 5)
+            .overlay(alignment: .topTrailing) {
+                // 반짝이 장식
+                SparkleIcon(color: .white.opacity(0.7), size: 15)
+                    .offset(x: -14, y: 10)
+            }
         }
         .buttonStyle(.plain)
         .accessibilityLabel(Text("Level \(level)"))
@@ -165,7 +167,15 @@ private struct ClearedLevelCard: View {
                     .minimumScaleFactor(0.5)
                     .foregroundStyle(.white)
                     .frame(width: 42, height: 42)
-                    .background(Circle().fill(Theme.levelGradient(level)))
+                    .background(
+                        RoundedRectangle(cornerRadius: 15)
+                            .fill(Theme.levelGradient(level))
+                            .overlay(
+                                RoundedRectangle(cornerRadius: 15)
+                                    .strokeBorder(Color.white.opacity(0.35), lineWidth: 1.5)
+                                    .padding(2)
+                            )
+                    )
 
                 Text("Level \(level)")
                     .fontWeight(.medium)

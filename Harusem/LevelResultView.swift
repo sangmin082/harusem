@@ -122,9 +122,7 @@ struct LevelResultView: View {
                 }
                 .chipBackground()
                 HStack(spacing: 5) {
-                    Image(systemName: "crown.fill")
-                        .font(.system(size: 11))
-                        .foregroundStyle(Theme.goldGradient)
+                    CrownIcon(size: 13)
                     Text(verbatim: "Lv.\(model.maxLevel)")
                         .monospacedDigit()
                         .fontWeight(.semibold)

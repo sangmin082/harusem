@@ -134,13 +134,13 @@ struct PuzzleScreen: View {
 
     private var controls: some View {
         HStack(spacing: 10) {
-            ControlButton(systemName: "arrow.uturn.backward", title: "Undo") {
+            ControlButton(systemName: "arrow.uturn.backward", tint: Theme.teal, title: "Undo") {
                 model.undo()
             }
             .disabled(session.game.moves.isEmpty)
             .opacity(session.game.moves.isEmpty ? 0.4 : 1)
 
-            ControlButton(systemName: "arrow.counterclockwise", title: "Restart") {
+            ControlButton(systemName: "arrow.counterclockwise", tint: Theme.flame, title: "Restart") {
                 model.reset()
             }
             .disabled(session.game.moves.isEmpty)
@@ -148,14 +148,15 @@ struct PuzzleScreen: View {
 
             if model.hintsRemaining == 0 && model.ads.rewardedReady {
                 // 힌트 소진 → 리워드 광고 시청으로 1개 충전
-                ControlButton(systemName: "play.rectangle.fill", title: "Hint") {
+                ControlButton(systemName: "play.rectangle.fill", tint: Theme.purple, title: "Hint") {
                     model.earnHintFromAd()
                 }
                 .disabled(session.game.isSolved)
                 .opacity(session.game.isSolved ? 0.4 : 1)
                 .accessibilityLabel(Text("Watch an ad for a hint"))
             } else {
-                ControlButton(systemName: "lightbulb.fill", badge: model.hintsRemaining, title: "Hint") {
+                ControlButton(systemName: "lightbulb.fill", tint: Theme.gold,
+                              badge: model.hintsRemaining, title: "Hint") {
                     model.useHint()
                 }
                 .disabled(model.hintsRemaining == 0 || session.game.isSolved)
@@ -197,9 +198,10 @@ struct PuzzleScreen: View {
     }
 }
 
-/// 하단 컨트롤 (undo/restart/hint) 원형 버튼.
+/// 하단 컨트롤 (undo/restart/hint) 원형 버튼 — 액션마다 색이 다르다.
 private struct ControlButton: View {
     let systemName: String
+    var tint: Color = Theme.brand
     var badge: Int? = nil
     let title: LocalizedStringKey
     let action: () -> Void
@@ -208,12 +210,12 @@ private struct ControlButton: View {
         Button(action: action) {
             ZStack(alignment: .topTrailing) {
                 Image(systemName: systemName)
-                    .font(.system(size: 17, weight: .semibold))
-                    .foregroundStyle(Theme.brand)
+                    .font(.system(size: 17, weight: .bold))
+                    .foregroundStyle(tint)
                     .frame(width: 48, height: 48)
                     .background(
-                        Circle().fill(Theme.surface)
-                            .overlay(Circle().strokeBorder(Theme.hairline))
+                        Circle().fill(tint.opacity(0.15))
+                            .overlay(Circle().strokeBorder(tint.opacity(0.3)))
                     )
                 if let badge {
                     Text(verbatim: "\(badge)")
@@ -221,7 +223,7 @@ private struct ControlButton: View {
                         .monospacedDigit()
                         .foregroundStyle(.white)
                         .frame(width: 17, height: 17)
-                        .background(Circle().fill(Theme.brandGradient))
+                        .background(Circle().fill(tint))
                         .offset(x: 3, y: -2)
                 }
             }
@@ -303,18 +305,17 @@ private struct TileButton: View {
     var body: some View {
         Button(action: action) {
             Text("\(tile.value)")
-                .font(.system(.title2, design: .rounded, weight: .bold))
+                .font(.system(.title2, design: .rounded, weight: .heavy))
                 .monospacedDigit()
                 .minimumScaleFactor(0.4)
                 .lineLimit(1)
                 .padding(.horizontal, 4)
                 .frame(maxWidth: .infinity, minHeight: 74)
-                .background(
-                    RoundedRectangle(cornerRadius: 18)
-                        .fill(isSelected ? AnyShapeStyle(Theme.brandGradient) : AnyShapeStyle(Theme.surface))
-                        .overlay(RoundedRectangle(cornerRadius: 18).strokeBorder(Theme.hairline))
-                        .shadow(color: isSelected ? Theme.brand.opacity(0.35) : .black.opacity(0.05),
-                                radius: isSelected ? 9 : 5, y: 3)
+                .candySurface(
+                    fill: isSelected ? AnyShapeStyle(Theme.brandGradient)
+                                     : AnyShapeStyle(Theme.tileFill(tile.id)),
+                    edge: isSelected ? Theme.brandDeep : Theme.tileEdge(tile.id),
+                    cornerRadius: 20, depth: 5
                 )
                 .foregroundStyle(isSelected ? Color.white : Color.primary)
                 .scaleEffect(isSelected ? 1.04 : 1)
@@ -355,17 +356,14 @@ private struct OperatorRow: View {
                     model.tapOp(op)
                 } label: {
                     Text(op.rawValue)
-                        .font(.system(.title2, design: .rounded, weight: .bold))
+                        .font(.system(.title2, design: .rounded, weight: .heavy))
                         .frame(maxWidth: .infinity)
-                        .frame(height: 54)
-                        .background(
-                            RoundedRectangle(cornerRadius: 16)
-                                .fill(isSelected ? AnyShapeStyle(gradient(for: op)) : AnyShapeStyle(Theme.surface))
-                                .overlay(RoundedRectangle(cornerRadius: 16)
-                                    .strokeBorder(isSelected ? AnyShapeStyle(Theme.hairline)
-                                                             : AnyShapeStyle(color(for: op).opacity(0.35))))
-                                .shadow(color: isSelected ? color(for: op).opacity(0.4) : .black.opacity(0.04),
-                                        radius: isSelected ? 8 : 4, y: 3)
+                        .frame(height: 52)
+                        .candySurface(
+                            fill: isSelected ? AnyShapeStyle(gradient(for: op))
+                                             : AnyShapeStyle(color(for: op).opacity(0.16)),
+                            edge: isSelected ? color(for: op) : color(for: op).opacity(0.35),
+                            cornerRadius: 17, depth: 4
                         )
                         .foregroundStyle(isSelected ? Color.white : color(for: op))
                 }

@@ -86,6 +86,42 @@ enum Theme {
         }
     }
 
+    // MARK: - 파스텔 (타일 캔디 색 순환)
+
+    /// 숫자 타일 윗면 파스텔 (민트/레몬/핑크/라일락/하늘).
+    static let pastelFills: [Color] = [
+        Color(light: UIColor(red: 0.851, green: 0.969, blue: 0.937, alpha: 1),
+              dark: UIColor(red: 0.137, green: 0.298, blue: 0.259, alpha: 1)),
+        Color(light: UIColor(red: 1.0, green: 0.953, blue: 0.788, alpha: 1),
+              dark: UIColor(red: 0.329, green: 0.290, blue: 0.118, alpha: 1)),
+        Color(light: UIColor(red: 1.0, green: 0.890, blue: 0.925, alpha: 1),
+              dark: UIColor(red: 0.349, green: 0.180, blue: 0.239, alpha: 1)),
+        Color(light: UIColor(red: 0.937, green: 0.890, blue: 1.0, alpha: 1),
+              dark: UIColor(red: 0.271, green: 0.200, blue: 0.380, alpha: 1)),
+        Color(light: UIColor(red: 0.867, green: 0.929, blue: 1.0, alpha: 1),
+              dark: UIColor(red: 0.157, green: 0.239, blue: 0.380, alpha: 1)),
+    ]
+    /// 타일 아랫면(두께) 색 — 윗면보다 한 톤 진하게.
+    static let pastelEdges: [Color] = [
+        Color(light: UIColor(red: 0.631, green: 0.871, blue: 0.800, alpha: 1),
+              dark: UIColor(red: 0.078, green: 0.200, blue: 0.169, alpha: 1)),
+        Color(light: UIColor(red: 0.949, green: 0.851, blue: 0.549, alpha: 1),
+              dark: UIColor(red: 0.239, green: 0.200, blue: 0.070, alpha: 1)),
+        Color(light: UIColor(red: 0.969, green: 0.729, blue: 0.820, alpha: 1),
+              dark: UIColor(red: 0.259, green: 0.110, blue: 0.161, alpha: 1)),
+        Color(light: UIColor(red: 0.800, green: 0.710, blue: 0.949, alpha: 1),
+              dark: UIColor(red: 0.188, green: 0.129, blue: 0.290, alpha: 1)),
+        Color(light: UIColor(red: 0.678, green: 0.820, blue: 0.969, alpha: 1),
+              dark: UIColor(red: 0.098, green: 0.161, blue: 0.278, alpha: 1)),
+    ]
+
+    static func tileFill(_ index: Int) -> Color {
+        pastelFills[abs(index) % pastelFills.count]
+    }
+    static func tileEdge(_ index: Int) -> Color {
+        pastelEdges[abs(index) % pastelEdges.count]
+    }
+
     // MARK: - 서피스
 
     /// 카드/타일의 기본 표면색 — 라이트는 순백, 다크는 밝은 남색 카드.
@@ -142,15 +178,60 @@ struct AppBackground: View {
                         .offset(x: 0, y: h * 0.02)
                 }
                 .blur(radius: 64)
+
+                // 흩뿌린 반짝이 장식 (아기자기 포인트)
+                ZStack {
+                    ForEach(0..<Self.sparkles.count, id: \.self) { index in
+                        let s = Self.sparkles[index]
+                        SparkleShape()
+                            .fill(s.0.opacity(0.35))
+                            .frame(width: s.3, height: s.3)
+                            .position(x: w * s.1, y: h * s.2)
+                    }
+                }
             }
         }
         .ignoresSafeArea()
+    }
+
+    /// (색, x비율, y비율, 크기) — 고정 배치라 렌더마다 흔들리지 않는다.
+    private static let sparkles: [(Color, CGFloat, CGFloat, CGFloat)] = [
+        (Theme.gold, 0.12, 0.14, 16),
+        (Theme.heart, 0.88, 0.10, 12),
+        (Theme.teal, 0.80, 0.30, 14),
+        (Theme.purple, 0.08, 0.42, 12),
+        (Theme.gold, 0.92, 0.55, 15),
+        (Theme.brand, 0.15, 0.68, 13),
+        (Theme.heart, 0.85, 0.80, 12),
+        (Theme.teal, 0.10, 0.90, 14),
+    ]
+}
+
+// MARK: - 캔디 버튼 (아래 두께가 있는 통통한 버튼)
+
+extension View {
+    /// 아래 두께(edge)가 보이는 캔디 버튼 배경. pressed면 눌린 것처럼 내려앉는다.
+    func candySurface<Fill: ShapeStyle>(
+        fill: Fill, edge: Color, cornerRadius: CGFloat = 18,
+        depth: CGFloat = 4, pressed: Bool = false
+    ) -> some View {
+        self
+            .background(
+                RoundedRectangle(cornerRadius: cornerRadius)
+                    .fill(fill)
+                    .background(
+                        RoundedRectangle(cornerRadius: cornerRadius)
+                            .fill(edge)
+                            .offset(y: pressed ? 0 : depth)
+                    )
+            )
+            .offset(y: pressed ? depth : 0)
     }
 }
 
 // MARK: - 버튼 스타일
 
-/// 주요 액션: 브랜드 그라디언트 필 버튼.
+/// 주요 액션: 브랜드 그라디언트 캔디 버튼.
 struct ProminentButtonStyle: ButtonStyle {
     func makeBody(configuration: Configuration) -> some View {
         configuration.label
@@ -158,14 +239,9 @@ struct ProminentButtonStyle: ButtonStyle {
             .foregroundStyle(.white)
             .padding(.vertical, 15)
             .frame(maxWidth: .infinity)
-            .background(
-                RoundedRectangle(cornerRadius: 16)
-                    .fill(Theme.brandGradient)
-                    .shadow(color: Theme.brand.opacity(configuration.isPressed ? 0.1 : 0.3),
-                            radius: 10, y: 5)
-            )
-            .scaleEffect(configuration.isPressed ? 0.97 : 1)
-            .animation(.spring(duration: 0.2), value: configuration.isPressed)
+            .candySurface(fill: Theme.brandGradient, edge: Theme.brandDeep,
+                          cornerRadius: 18, depth: 4, pressed: configuration.isPressed)
+            .animation(.spring(duration: 0.15), value: configuration.isPressed)
     }
 }
 

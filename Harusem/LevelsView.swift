@@ -90,9 +90,7 @@ private struct LevelRow: View {
             }
 
             if locked {
-                Image(systemName: "lock.fill")
-                    .font(.caption)
-                    .foregroundStyle(.tertiary)
+                LockIcon(size: 16)
             } else if stars != nil {
                 // 클리어한 레벨: 다시 플레이
                 Image(systemName: "arrow.counterclockwise")
@@ -112,13 +110,18 @@ private struct LevelRow: View {
     private var badgeBackground: some View {
         ZStack {
             if isCurrent {
-                Circle().fill(Theme.brandGradient)
+                RoundedRectangle(cornerRadius: 16).fill(Theme.brandGradient)
                     .shadow(color: Theme.brand.opacity(0.35), radius: 6, y: 3)
             } else if stars != nil {
-                Circle().fill(Theme.levelGradient(level))
+                RoundedRectangle(cornerRadius: 16).fill(Theme.levelGradient(level))
+                    .overlay(
+                        RoundedRectangle(cornerRadius: 16)
+                            .strokeBorder(Color.white.opacity(0.35), lineWidth: 1.5)
+                            .padding(2)
+                    )
             } else {
-                Circle().fill(Theme.surface)
-                    .overlay(Circle().strokeBorder(Theme.hairline))
+                RoundedRectangle(cornerRadius: 16).fill(Theme.surface)
+                    .overlay(RoundedRectangle(cornerRadius: 16).strokeBorder(Theme.hairline))
             }
         }
     }

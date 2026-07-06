@@ -86,9 +86,64 @@ struct CrackShape: Shape {
     }
 }
 
+/// 4꼭지 반짝이 (장식용).
+struct SparkleShape: Shape {
+    func path(in rect: CGRect) -> Path {
+        let w = rect.width
+        let h = rect.height
+        let cx = rect.midX
+        let cy = rect.midY
+        var path = Path()
+        path.move(to: CGPoint(x: cx, y: rect.minY))
+        path.addQuadCurve(to: CGPoint(x: rect.maxX, y: cy),
+                          control: CGPoint(x: cx + w * 0.10, y: cy - h * 0.10))
+        path.addQuadCurve(to: CGPoint(x: cx, y: rect.maxY),
+                          control: CGPoint(x: cx + w * 0.10, y: cy + h * 0.10))
+        path.addQuadCurve(to: CGPoint(x: rect.minX, y: cy),
+                          control: CGPoint(x: cx - w * 0.10, y: cy + h * 0.10))
+        path.addQuadCurve(to: CGPoint(x: cx, y: rect.minY),
+                          control: CGPoint(x: cx - w * 0.10, y: cy - h * 0.10))
+        path.closeSubpath()
+        return path
+    }
+}
+
+/// 재생 삼각형 (모서리 둥글게).
+struct TriangleShape: Shape {
+    func path(in rect: CGRect) -> Path {
+        var path = Path()
+        path.move(to: CGPoint(x: rect.minX, y: rect.minY))
+        path.addLine(to: CGPoint(x: rect.maxX, y: rect.midY))
+        path.addLine(to: CGPoint(x: rect.minX, y: rect.maxY))
+        path.closeSubpath()
+        return path
+    }
+}
+
+/// 왕관 (최고 레벨 표시).
+struct CrownShape: Shape {
+    func path(in rect: CGRect) -> Path {
+        let w = rect.width
+        let h = rect.height
+        func pt(_ x: CGFloat, _ y: CGFloat) -> CGPoint {
+            CGPoint(x: rect.minX + x * w, y: rect.minY + y * h)
+        }
+        var path = Path()
+        path.move(to: pt(0.12, 0.88))
+        path.addLine(to: pt(0.05, 0.32))
+        path.addLine(to: pt(0.30, 0.54))
+        path.addLine(to: pt(0.50, 0.14))
+        path.addLine(to: pt(0.70, 0.54))
+        path.addLine(to: pt(0.95, 0.32))
+        path.addLine(to: pt(0.88, 0.88))
+        path.closeSubpath()
+        return path
+    }
+}
+
 // MARK: - 아이콘 뷰
 
-/// 골드 그라디언트 별. filled=false면 빈 별.
+/// 골드 그라디언트 별. filled=false면 빈 별. (테두리 라운드 조인으로 꼭지를 둥글게)
 struct StarIcon: View {
     var filled = true
     var size: CGFloat = 16
@@ -98,8 +153,88 @@ struct StarIcon: View {
             .fill(filled ? AnyShapeStyle(Theme.goldGradient) : AnyShapeStyle(Color(.systemFill)))
             .overlay(
                 StarShape().stroke(
-                    filled ? AnyShapeStyle(Theme.goldDeep.opacity(0.5)) : AnyShapeStyle(Theme.hairline),
-                    lineWidth: max(0.8, size / 22)
+                    filled ? AnyShapeStyle(Theme.goldDeep.opacity(0.6)) : AnyShapeStyle(Theme.hairline),
+                    style: StrokeStyle(lineWidth: max(1, size / 14), lineJoin: .round)
+                )
+            )
+            .frame(width: size, height: size)
+    }
+}
+
+/// 반짝이 아이콘 (장식).
+struct SparkleIcon: View {
+    var color: Color = Theme.gold
+    var size: CGFloat = 14
+
+    var body: some View {
+        SparkleShape()
+            .fill(color)
+            .frame(width: size, height: size)
+    }
+}
+
+/// 흰 원 안의 재생 버튼 (현재 레벨 카드).
+struct PlayIcon: View {
+    var size: CGFloat = 40
+
+    var body: some View {
+        ZStack {
+            Circle()
+                .fill(Color.white)
+                .shadow(color: .black.opacity(0.12), radius: 3, y: 2)
+            TriangleShape()
+                .fill(Theme.brandGradient)
+                .overlay(
+                    TriangleShape().stroke(
+                        Theme.brand,
+                        style: StrokeStyle(lineWidth: size * 0.07, lineJoin: .round)
+                    )
+                )
+                .frame(width: size * 0.34, height: size * 0.38)
+                .offset(x: size * 0.04)
+        }
+        .frame(width: size, height: size)
+    }
+}
+
+/// 자물쇠 (잠긴 레벨).
+struct LockIcon: View {
+    var size: CGFloat = 18
+    var color = Color(.systemGray2)
+
+    var body: some View {
+        VStack(spacing: -size * 0.04) {
+            // 고리
+            Circle()
+                .trim(from: 0, to: 0.5)
+                .stroke(color, style: StrokeStyle(lineWidth: size * 0.13, lineCap: .round))
+                .rotationEffect(.degrees(180))
+                .frame(width: size * 0.46, height: size * 0.46)
+            // 몸통 + 열쇠 구멍
+            RoundedRectangle(cornerRadius: size * 0.16)
+                .fill(color)
+                .frame(width: size * 0.74, height: size * 0.56)
+                .overlay(
+                    Circle()
+                        .fill(Color.white.opacity(0.85))
+                        .frame(width: size * 0.14, height: size * 0.14)
+                )
+        }
+        .frame(width: size, height: size)
+    }
+}
+
+/// 골드 왕관 (최고 레벨).
+struct CrownIcon: View {
+    var size: CGFloat = 14
+
+    var body: some View {
+        CrownShape()
+            .fill(Theme.goldGradient)
+            .overlay(
+                CrownShape().stroke(
+                    Theme.goldDeep.opacity(0.6),
+                    style: StrokeStyle(lineWidth: max(1, size / 12), lineJoin: .round)
                 )
             )
             .frame(width: size, height: size)
@@ -180,9 +315,18 @@ struct FlameIcon: View {
     }
 }
 
-/// 레벨 클리어 배지: 광선 + 브랜드 원 + 흰 별.
+/// 레벨 클리어 배지: 광선 + 컨페티 + 브랜드 원 + 흰 별.
 struct ClearBadge: View {
     var size: CGFloat = 120
+
+    private static let confetti: [(Color, CGFloat, CGFloat, CGFloat)] = [
+        (Theme.heart, -0.42, -0.20, 0.07),
+        (Theme.teal, 0.44, -0.26, 0.06),
+        (Theme.gold, 0.36, 0.34, 0.055),
+        (Theme.purple, -0.38, 0.30, 0.06),
+        (Theme.flame, 0.05, -0.50, 0.05),
+        (Theme.success, -0.15, 0.48, 0.05),
+    ]
 
     var body: some View {
         ZStack {
@@ -193,6 +337,14 @@ struct ClearBadge: View {
                     .offset(y: -size * 0.46)
                     .rotationEffect(.degrees(Double(index) * 45))
             }
+            // 컨페티 점들
+            ForEach(0..<Self.confetti.count, id: \.self) { index in
+                let c = Self.confetti[index]
+                Circle()
+                    .fill(c.0)
+                    .frame(width: size * c.3, height: size * c.3)
+                    .offset(x: size * c.1, y: size * c.2)
+            }
             Circle()
                 .fill(Theme.brandGradient)
                 .frame(width: size * 0.66, height: size * 0.66)
@@ -200,6 +352,8 @@ struct ClearBadge: View {
             StarShape()
                 .fill(Color.white)
                 .frame(width: size * 0.36, height: size * 0.36)
+            SparkleIcon(color: .white.opacity(0.9), size: size * 0.10)
+                .offset(x: size * 0.16, y: -size * 0.16)
         }
         .frame(width: size, height: size)
     }
