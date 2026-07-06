@@ -6,6 +6,7 @@ import HarusemKit
 struct LevelsTab: View {
     var model: AppModel
     var goHome: () -> Void
+    @State private var limitLevel: Int?
 
     /// 해금된 레벨 아래로 미리 보여줄 잠긴 레벨 수.
     private static let lockedPreviewCount = 3
@@ -17,8 +18,12 @@ struct LevelsTab: View {
                     Section {
                         ForEach(1...model.maxLevel, id: \.self) { n in
                             Button {
-                                model.openLevel(n)
-                                goHome()
+                                if model.canOpenLevel(n) {
+                                    model.openLevel(n)
+                                    goHome()
+                                } else {
+                                    limitLevel = n
+                                }
                             } label: {
                                 LevelRow(
                                     level: n,
@@ -45,6 +50,7 @@ struct LevelsTab: View {
                 .onAppear {
                     proxy.scrollTo(model.maxLevel, anchor: .center)
                 }
+                .playLimitAlert(model: model, limitLevel: $limitLevel)
             }
         }
     }

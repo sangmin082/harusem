@@ -131,6 +131,16 @@
         }
       }
     },
+    "Cancel": {
+      "localizations": {
+        "ko": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "취소"
+          }
+        }
+      }
+    },
     "Clear a level with at least one star to unlock the next.": {
       "localizations": {
         "ko": {
@@ -571,6 +581,16 @@
         }
       }
     },
+    "No plays left today": {
+      "localizations": {
+        "ko": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "오늘 플레이 횟수를 다 썼어요"
+          }
+        }
+      }
+    },
     "One heart lost": {
       "localizations": {
         "ko": {
@@ -627,6 +647,16 @@
           "stringUnit": {
             "state": "translated",
             "value": "다시 플레이"
+          }
+        }
+      }
+    },
+    "Plays left today: %lld": {
+      "localizations": {
+        "ko": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "오늘 남은 플레이: %lld"
           }
         }
       }
@@ -911,6 +941,16 @@
         }
       }
     },
+    "Watch an ad for one more try": {
+      "localizations": {
+        "ko": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "광고 보고 한 번 더"
+          }
+        }
+      }
+    },
     "Watch an ad to refill a heart": {
       "localizations": {
         "ko": {
@@ -927,6 +967,26 @@
           "stringUnit": {
             "state": "translated",
             "value": "오차 ±10 이내는 별 2개, ±25 이내는 별 1개예요."
+          }
+        }
+      }
+    },
+    "You can play each level 3 times a day.": {
+      "localizations": {
+        "ko": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "레벨당 하루 3번 플레이할 수 있어요."
+          }
+        }
+      }
+    },
+    "You can play each level 3 times a day. Watch an ad for one more try.": {
+      "localizations": {
+        "ko": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "레벨당 하루 3번 플레이할 수 있어요. 광고를 보면 한 번 더 도전할 수 있어요."
           }
         }
       }

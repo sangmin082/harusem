@@ -34,6 +34,8 @@ final class AppModel {
     static let dailyHintAllowance = 3
     /// 전면 광고 주기: N번째 클리어마다 1회.
     static let interstitialEvery = 3
+    /// 레벨당 하루 플레이 가능 횟수. 소진 후는 리워드 광고로 1회 추가.
+    static let dailyPlaysPerLevel = 3
 
     private let defaults: UserDefaults
     private(set) var heartBank: HeartBank
@@ -44,6 +46,7 @@ final class AppModel {
     private static let activityKey = "harusem.level.activity"
     private static let snapshotKey = "harusem.level.snapshot"
     private static let completionsKey = "harusem.level.completions"
+    private static let playsKey = "harusem.level.plays"
     private static let hintsKey = "harusem.hints.used"
     private static let heartsKey = "harusem.hearts"
 
@@ -179,12 +182,65 @@ final class AppModel {
     // MARK: - 레벨 이동
 
     /// 레벨 목록/홈 맵에서 선택 → 플레이 화면 진입.
-    /// 진행 중인 현재 레벨을 다시 누르면 이어한다 (리셋하지 않음).
+    /// 진행 중인 현재 레벨을 다시 누르면 이어한다 (플레이 횟수 소모 없음).
+    /// 새로 시작하는 판은 하루 플레이 횟수(레벨당 3회)를 1 소모한다.
     func openLevel(_ n: Int) {
         guard (1...maxLevel).contains(n) else { return }
+        if n == level, !session.isDayComplete {
+            isPlaying = true
+            return
+        }
+        guard playsRemaining(for: n) > 0 else { return }
+        consumePlay(n)
         isPlaying = true
-        if n == level, !session.isDayComplete { return }
         startLevel(n)
+    }
+
+    // MARK: - 하루 플레이 횟수 (레벨당 3회)
+
+    /// 오늘 해당 레벨에 남은 플레이 횟수.
+    func playsRemaining(for n: Int, now: Date = .now) -> Int {
+        max(0, Self.dailyPlaysPerLevel - (storedPlays()[playKey(n, now: now)] ?? 0))
+    }
+
+    /// 지금 이 레벨에 들어갈 수 있는지 (이어하기는 횟수와 무관).
+    func canOpenLevel(_ n: Int) -> Bool {
+        guard (1...maxLevel).contains(n) else { return false }
+        if n == level, !session.isDayComplete { return true }
+        return playsRemaining(for: n) > 0
+    }
+
+    /// 리워드 광고 시청 완료 → 해당 레벨 플레이 1회 추가 후 바로 시작.
+    func earnPlayViaAd(level n: Int) {
+        guard playsRemaining(for: n) == 0 else { return }
+        ads.showRewarded { [weak self] in
+            guard let self else { return }
+            self.refundPlay(n)
+            self.openLevel(n)
+        }
+    }
+
+    private func playKey(_ n: Int, now: Date = .now) -> String {
+        "\(PuzzleGenerator.dateKey(for: now))#\(n)"
+    }
+
+    private func storedPlays() -> [String: Int] {
+        (defaults.dictionary(forKey: Self.playsKey) as? [String: Int]) ?? [:]
+    }
+
+    private func consumePlay(_ n: Int, now: Date = .now) {
+        let today = PuzzleGenerator.dateKey(for: now)
+        // 오늘 키만 유지 (지난 날짜는 버린다)
+        var plays = storedPlays().filter { $0.key.hasPrefix(today) }
+        plays[playKey(n, now: now), default: 0] += 1
+        defaults.set(plays, forKey: Self.playsKey)
+    }
+
+    private func refundPlay(_ n: Int, now: Date = .now) {
+        var plays = storedPlays()
+        let key = playKey(n, now: now)
+        plays[key] = max(0, (plays[key] ?? 0) - 1)
+        defaults.set(plays, forKey: Self.playsKey)
     }
 
     /// 플레이 화면에서 홈(레벨 맵)으로 복귀. 진행 상태는 저장된다.
@@ -198,15 +254,19 @@ final class AppModel {
         !session.isDayComplete && !session.game.moves.isEmpty
     }
 
-    /// 방금 클리어한 레벨의 다음 레벨로.
+    /// 방금 클리어한 레벨의 다음 레벨로 (플레이 횟수 규칙 동일 적용).
     func advanceToNextLevel() {
         guard session.isDayComplete else { return }
-        startLevel(min(level + 1, maxLevel))
+        openLevel(min(level + 1, maxLevel))
     }
 
     /// 현재 레벨 처음부터 다시 (실패 후 재도전 / 클리어 후 다시 플레이).
     func retryLevel() {
-        startLevel(level)
+        if session.isDayComplete {
+            openLevel(level)  // 새 판 → 플레이 횟수 소모
+        } else {
+            startLevel(level)  // 진행 중 리셋과 동일 취급 (소모 없음)
+        }
     }
 
     private func startLevel(_ n: Int) {

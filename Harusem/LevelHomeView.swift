@@ -5,6 +5,7 @@ import HarusemKit
 /// 아래로 완료한 레벨들이 내려간다. 박스를 누르면 플레이 화면으로 진입한다.
 struct LevelHomeView: View {
     var model: AppModel
+    @State private var limitLevel: Int?
 
     /// 현재 레벨 위로 미리 보여줄 잠긴 레벨 수.
     private static let lockedPreviewCount = 3
@@ -20,15 +21,20 @@ struct LevelHomeView: View {
 
                     CurrentLevelCard(
                         level: model.maxLevel,
-                        inProgress: model.level == model.maxLevel && model.hasProgress
+                        inProgress: model.level == model.maxLevel && model.hasProgress,
+                        playsRemaining: model.playsRemaining(for: model.maxLevel)
                     ) {
-                        model.openLevel(model.maxLevel)
+                        open(model.maxLevel)
                     }
                     .id("current")
 
                     ForEach(clearedLevelsDescending, id: \.self) { n in
-                        ClearedLevelCard(level: n, stars: model.bestStars[n] ?? 0) {
-                            model.openLevel(n)
+                        ClearedLevelCard(
+                            level: n,
+                            stars: model.bestStars[n] ?? 0,
+                            playsRemaining: model.playsRemaining(for: n)
+                        ) {
+                            open(n)
                         }
                     }
                 }
@@ -38,6 +44,15 @@ struct LevelHomeView: View {
                 // 현재 레벨 카드가 화면 가운데 오도록
                 proxy.scrollTo("current", anchor: .center)
             }
+        }
+        .playLimitAlert(model: model, limitLevel: $limitLevel)
+    }
+
+    private func open(_ n: Int) {
+        if model.canOpenLevel(n) {
+            model.openLevel(n)
+        } else {
+            limitLevel = n
         }
     }
 
@@ -90,6 +105,7 @@ private struct LockedLevelCard: View {
 private struct CurrentLevelCard: View {
     let level: Int
     let inProgress: Bool
+    let playsRemaining: Int
     let action: () -> Void
 
     var body: some View {
@@ -113,6 +129,10 @@ private struct CurrentLevelCard: View {
 
                 Spacer()
 
+                if playsRemaining < AppModel.dailyPlaysPerLevel {
+                    PlaysChip(remaining: playsRemaining, onDark: true)
+                }
+
                 Image(systemName: "play.circle.fill")
                     .font(.system(size: 40))
             }
@@ -133,6 +153,7 @@ private struct CurrentLevelCard: View {
 private struct ClearedLevelCard: View {
     let level: Int
     let stars: Int
+    let playsRemaining: Int
     let action: () -> Void
 
     var body: some View {
@@ -151,9 +172,13 @@ private struct ClearedLevelCard: View {
 
                 Spacer()
 
+                if playsRemaining < AppModel.dailyPlaysPerLevel {
+                    PlaysChip(remaining: playsRemaining, onDark: false)
+                }
+
                 StarsRow(earned: stars, size: 15)
 
-                Image(systemName: "arrow.counterclockwise")
+                Image(systemName: playsRemaining == 0 ? "play.rectangle.fill" : "arrow.counterclockwise")
                     .font(.caption)
                     .foregroundStyle(.secondary)
             }
@@ -163,5 +188,51 @@ private struct ClearedLevelCard: View {
         }
         .buttonStyle(.plain)
         .accessibilityLabel(Text("Level \(level)"))
+    }
+}
+
+/// 오늘 남은 플레이 횟수 칩 (3회 미만으로 줄었을 때만 표시).
+struct PlaysChip: View {
+    let remaining: Int
+    var onDark = false
+
+    var body: some View {
+        Text(verbatim: "\(remaining)/\(AppModel.dailyPlaysPerLevel)")
+            .font(.caption2.bold())
+            .monospacedDigit()
+            .foregroundStyle(onDark ? Color.white : Color.secondary)
+            .padding(.horizontal, 7)
+            .padding(.vertical, 3)
+            .background(
+                Capsule().fill(onDark ? Color.white.opacity(0.22) : Color.black.opacity(0.06))
+            )
+            .accessibilityLabel(Text("Plays left today: \(remaining)"))
+    }
+}
+
+// MARK: - 플레이 횟수 소진 안내
+
+extension View {
+    /// 플레이 횟수 소진 알림: 광고로 1회 추가 제안.
+    func playLimitAlert(model: AppModel, limitLevel: Binding<Int?>) -> some View {
+        alert(
+            Text("No plays left today"),
+            isPresented: Binding(
+                get: { limitLevel.wrappedValue != nil },
+                set: { if !$0 { limitLevel.wrappedValue = nil } }
+            )
+        ) {
+            Button {
+                if let n = limitLevel.wrappedValue {
+                    model.earnPlayViaAd(level: n)
+                }
+            } label: {
+                Text("Watch an ad for one more try")
+            }
+            .disabled(!model.ads.rewardedReady)
+            Button("Cancel", role: .cancel) {}
+        } message: {
+            Text("You can play each level 3 times a day. Watch an ad for one more try.")
+        }
     }
 }

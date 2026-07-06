@@ -5,9 +5,19 @@ import HarusemKit
 struct LevelResultView: View {
     var model: AppModel
     @State private var appeared = false
+    @State private var limitLevel: Int?
 
     private var stars: Int { model.session.totalStars }
     private var cleared: Bool { stars >= 1 }
+
+    /// 플레이 횟수가 남았으면 열고, 아니면 광고 안내를 띄운다.
+    private func openOrPrompt(_ n: Int) {
+        if model.canOpenLevel(n) {
+            model.openLevel(n)
+        } else {
+            limitLevel = n
+        }
+    }
 
     var body: some View {
         VStack(spacing: 22) {
@@ -72,7 +82,7 @@ struct LevelResultView: View {
             VStack(spacing: 12) {
                 if cleared {
                     Button {
-                        model.advanceToNextLevel()
+                        openOrPrompt(min(model.level + 1, model.maxLevel))
                     } label: {
                         Label("Next level", systemImage: "arrow.right")
                     }
@@ -80,7 +90,7 @@ struct LevelResultView: View {
 
                     HStack(spacing: 12) {
                         Button {
-                            model.retryLevel()
+                            openOrPrompt(model.level)
                         } label: {
                             Label("Play again", systemImage: "arrow.counterclockwise")
                         }
@@ -93,7 +103,7 @@ struct LevelResultView: View {
                     }
                 } else {
                     Button {
-                        model.retryLevel()
+                        openOrPrompt(model.level)
                     } label: {
                         Label("Try again", systemImage: "arrow.counterclockwise")
                     }
@@ -148,6 +158,7 @@ struct LevelResultView: View {
             .padding(.leading, 20)
             .padding(.top, 8)
         }
+        .playLimitAlert(model: model, limitLevel: $limitLevel)
         .onAppear {
             withAnimation(.spring(duration: 0.5)) {
                 appeared = true

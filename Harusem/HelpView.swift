@@ -22,6 +22,8 @@ struct HelpView: View {
                     "Undo anytime. One puzzle per level — clear it to unlock the next.")
             ruleRow("heart.fill", Theme.heartGradient,
                     "Finish below 3 stars and you lose one heart. Hearts refill every 10 minutes.")
+            ruleRow("play.circle", Theme.flameGradient,
+                    "You can play each level 3 times a day.")
 
             Spacer()
 
