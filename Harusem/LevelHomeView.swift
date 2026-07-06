@@ -1,33 +1,88 @@
 import SwiftUI
 import HarusemKit
 
-/// 홈 탭: 레벨 맵. 맨 위 = 도전할 현재 레벨(큰 카드), 아래로 완료한 레벨들이 내려간다.
-/// 박스를 누르면 플레이 화면으로 진입한다.
+/// 홈 탭: 레벨 맵. 위로는 잠긴 다음 레벨들(흐림 + 자물쇠), 가운데 현재 도전 레벨(큰 카드),
+/// 아래로 완료한 레벨들이 내려간다. 박스를 누르면 플레이 화면으로 진입한다.
 struct LevelHomeView: View {
     var model: AppModel
 
-    var body: some View {
-        ScrollView {
-            VStack(spacing: 12) {
-                CurrentLevelCard(
-                    level: model.maxLevel,
-                    inProgress: model.level == model.maxLevel && model.hasProgress
-                ) {
-                    model.openLevel(model.maxLevel)
-                }
+    /// 현재 레벨 위로 미리 보여줄 잠긴 레벨 수.
+    private static let lockedPreviewCount = 3
 
-                ForEach(clearedLevelsDescending, id: \.self) { n in
-                    ClearedLevelCard(level: n, stars: model.bestStars[n] ?? 0) {
-                        model.openLevel(n)
+    var body: some View {
+        ScrollViewReader { proxy in
+            ScrollView {
+                VStack(spacing: 12) {
+                    // 잠긴 레벨: 먼 레벨부터 위에 쌓여 내려온다 (5, 4, 3 → 현재 2 바로 위가 3)
+                    ForEach(lockedLevelsDescending, id: \.self) { n in
+                        LockedLevelCard(level: n)
+                    }
+
+                    CurrentLevelCard(
+                        level: model.maxLevel,
+                        inProgress: model.level == model.maxLevel && model.hasProgress
+                    ) {
+                        model.openLevel(model.maxLevel)
+                    }
+                    .id("current")
+
+                    ForEach(clearedLevelsDescending, id: \.self) { n in
+                        ClearedLevelCard(level: n, stars: model.bestStars[n] ?? 0) {
+                            model.openLevel(n)
+                        }
                     }
                 }
+                .padding(20)
             }
-            .padding(20)
+            .onAppear {
+                // 현재 레벨 카드가 화면 가운데 오도록
+                proxy.scrollTo("current", anchor: .center)
+            }
         }
+    }
+
+    private var lockedLevelsDescending: [Int] {
+        stride(from: model.maxLevel + Self.lockedPreviewCount,
+               through: model.maxLevel + 1, by: -1).map { $0 }
     }
 
     private var clearedLevelsDescending: [Int] {
         stride(from: model.maxLevel - 1, through: 1, by: -1).map { $0 }
+    }
+}
+
+/// 아직 잠긴 레벨 (흐림 + 자물쇠).
+private struct LockedLevelCard: View {
+    let level: Int
+
+    var body: some View {
+        HStack(spacing: 14) {
+            Text(verbatim: "\(level)")
+                .font(.system(.headline, design: .rounded, weight: .bold))
+                .monospacedDigit()
+                .minimumScaleFactor(0.5)
+                .foregroundStyle(Color(.tertiaryLabel))
+                .frame(width: 42, height: 42)
+                .background(
+                    Circle().fill(Theme.surface)
+                        .overlay(Circle().strokeBorder(Theme.hairline))
+                )
+
+            Text("Level \(level)")
+                .fontWeight(.medium)
+                .foregroundStyle(.secondary)
+
+            Spacer()
+
+            Image(systemName: "lock.fill")
+                .font(.subheadline)
+                .foregroundStyle(.tertiary)
+        }
+        .padding(.horizontal, 16)
+        .padding(.vertical, 13)
+        .harusemCard(cornerRadius: 18)
+        .opacity(0.5)
+        .accessibilityElement(children: .combine)
     }
 }
 
