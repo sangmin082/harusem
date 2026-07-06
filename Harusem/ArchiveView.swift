@@ -59,7 +59,11 @@ struct CalendarTab: View {
                                 goHome()
                             }
                         } label: {
-                            ArchiveRow(dateKey: dateKey, record: record, locked: locked)
+                            ArchiveRow(
+                                title: Self.displayDate(dateKey),
+                                record: record,
+                                locked: locked
+                            )
                         }
                         .buttonStyle(.plain)
                     }
@@ -79,17 +83,36 @@ struct CalendarTab: View {
     private var todayKey: String {
         PuzzleGenerator.dateKey(for: .now)
     }
+
+    private static let keyParser: DateFormatter = {
+        let formatter = DateFormatter()
+        formatter.dateFormat = "yyyy-MM-dd"
+        formatter.locale = Locale(identifier: "en_US_POSIX")
+        return formatter
+    }()
+
+    private static let displayFormatter: DateFormatter = {
+        let formatter = DateFormatter()
+        formatter.locale = .autoupdatingCurrent
+        formatter.setLocalizedDateFormatFromTemplate("MMMdEEE")  // ko: "7월 5일 (일)", en: "Sun, Jul 5"
+        return formatter
+    }()
+
+    /// "2026-07-05" → 로컬라이즈된 날짜 표기.
+    static func displayDate(_ dateKey: String) -> String {
+        guard let date = keyParser.date(from: dateKey) else { return dateKey }
+        return displayFormatter.string(from: date)
+    }
 }
 
 private struct ArchiveRow: View {
-    let dateKey: String
+    let title: String
     let record: DayRecord?
     let locked: Bool
 
     var body: some View {
         HStack {
-            Text(verbatim: dateKey)
-                .monospacedDigit()
+            Text(verbatim: title)
             Spacer()
             if let record {
                 Text(verbatim: "★ \(record.totalStars)/15")

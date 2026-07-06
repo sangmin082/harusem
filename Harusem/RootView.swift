@@ -7,7 +7,7 @@ struct RootView: View {
     @State private var showHearts = false
     @Environment(\.scenePhase) private var scenePhase
 
-    private let heartTimer = Timer.publish(every: 30, on: .main, in: .common).autoconnect()
+    private let heartTimer = Timer.publish(every: 5, on: .main, in: .common).autoconnect()
 
     enum Tab: Hashable {
         case home, calendar, settings
@@ -28,13 +28,10 @@ struct RootView: View {
                 .tag(Tab.settings)
         }
         .safeAreaInset(edge: .top, spacing: 0) {
-            // 우상단 고정 하트 (모든 탭 공통)
-            HStack {
-                Spacer()
-                HeartChip(model: model) { showHearts = true }
-            }
-            .padding(.horizontal, 20)
-            .padding(.bottom, 4)
+            // 상단 고정 상태 바: 별점/스트릭 + 하트/충전 카운트다운 (모든 탭 공통)
+            StatusBar(model: model) { showHearts = true }
+                .padding(.horizontal, 20)
+                .padding(.bottom, 6)
         }
         .sheet(isPresented: $showHearts) { HeartsView(model: model) }
         .onReceive(heartTimer) { _ in

@@ -381,6 +381,16 @@
         }
       }
     },
+    "Next heart in %@": {
+      "localizations": {
+        "ko": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "다음 하트까지 %@"
+          }
+        }
+      }
+    },
     "Next heart: %lld min": {
       "localizations": {
         "ko": {

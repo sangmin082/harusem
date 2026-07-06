@@ -1,21 +1,71 @@
 import SwiftUI
 import HarusemKit
 
-/// 우상단 고정 하트 잔량 칩 (모든 탭 공통).
+/// 상단 고정 상태 바: 왼쪽 별점/스트릭, 오른쪽 하트+충전 카운트다운.
+struct StatusBar: View {
+    var model: AppModel
+    let onHeartsTap: () -> Void
+
+    var body: some View {
+        HStack(spacing: 8) {
+            // 현재 세션(오늘/아카이브/보너스)에서 확정한 별
+            HStack(spacing: 3) {
+                Image(systemName: "star.fill")
+                    .foregroundStyle(.yellow)
+                Text(verbatim: "\(model.session.totalStars)/\(model.session.maxStars)")
+                    .monospacedDigit()
+                    .fontWeight(.semibold)
+            }
+            .font(.subheadline)
+            .padding(.horizontal, 10)
+            .padding(.vertical, 5)
+            .background(Capsule().fill(Color(.secondarySystemBackground)))
+            .accessibilityLabel(Text("\(model.session.totalStars)/\(model.session.maxStars) stars"))
+
+            if model.currentStreak > 1 {
+                HStack(spacing: 3) {
+                    Text(verbatim: "🔥")
+                    Text(verbatim: "\(model.currentStreak)")
+                        .monospacedDigit()
+                        .fontWeight(.semibold)
+                }
+                .font(.subheadline)
+                .padding(.horizontal, 10)
+                .padding(.vertical, 5)
+                .background(Capsule().fill(Color(.secondarySystemBackground)))
+                .accessibilityLabel(Text("\(model.currentStreak) day streak"))
+            }
+
+            Spacer()
+
+            HeartChip(model: model, action: onHeartsTap)
+        }
+    }
+}
+
+/// 우상단 고정 하트 잔량 칩 + 다음 충전 카운트다운 (초 단위 갱신).
 struct HeartChip: View {
     var model: AppModel
     let action: () -> Void
 
     var body: some View {
         Button(action: action) {
-            HStack(spacing: 3) {
-                Image(systemName: "heart.fill")
-                    .foregroundStyle(.red)
-                Text(verbatim: "\(model.hearts)")
-                    .monospacedDigit()
-                    .fontWeight(.semibold)
+            TimelineView(.periodic(from: .now, by: 1)) { context in
+                HStack(spacing: 4) {
+                    Image(systemName: "heart.fill")
+                        .foregroundStyle(.red)
+                    Text(verbatim: "\(model.hearts)")
+                        .monospacedDigit()
+                        .fontWeight(.semibold)
+                    if let countdown = model.nextHeartCountdown(now: context.date) {
+                        Text(verbatim: "· \(countdown)")
+                            .font(.caption)
+                            .monospacedDigit()
+                            .foregroundStyle(.secondary)
+                    }
+                }
+                .font(.subheadline)
             }
-            .font(.subheadline)
             .padding(.horizontal, 10)
             .padding(.vertical, 5)
             .background(Capsule().fill(Color(.secondarySystemBackground)))
@@ -30,7 +80,7 @@ struct HeartsView: View {
     var model: AppModel
     @Environment(\.dismiss) private var dismiss
 
-    private let timer = Timer.publish(every: 10, on: .main, in: .common).autoconnect()
+    private let timer = Timer.publish(every: 5, on: .main, in: .common).autoconnect()
 
     var body: some View {
         VStack(spacing: 20) {
@@ -47,11 +97,13 @@ struct HeartsView: View {
             }
             .accessibilityLabel(Text("Hearts: \(model.hearts)"))
 
-            if let minutes = model.nextHeartMinutes {
-                Text("Next heart: \(minutes) min")
-                    .font(.subheadline)
-                    .foregroundStyle(.secondary)
-                    .monospacedDigit()
+            TimelineView(.periodic(from: .now, by: 1)) { context in
+                if let countdown = model.nextHeartCountdown(now: context.date) {
+                    Text("Next heart in \(countdown)")
+                        .font(.subheadline)
+                        .foregroundStyle(.secondary)
+                        .monospacedDigit()
+                }
             }
 
             VStack(spacing: 6) {

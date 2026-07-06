@@ -190,11 +190,13 @@ private struct OutOfHeartsCard: View {
                 .font(.system(size: 52))
             Text("Out of hearts")
                 .font(.headline)
-            if let minutes = model.nextHeartMinutes {
-                Text("Next heart: \(minutes) min")
-                    .font(.subheadline)
-                    .foregroundStyle(.secondary)
-                    .monospacedDigit()
+            TimelineView(.periodic(from: .now, by: 1)) { context in
+                if let countdown = model.nextHeartCountdown(now: context.date) {
+                    Text("Next heart in \(countdown)")
+                        .font(.subheadline)
+                        .foregroundStyle(.secondary)
+                        .monospacedDigit()
+                }
             }
             Button {
                 model.refillHeartViaAd()

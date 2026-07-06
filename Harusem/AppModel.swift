@@ -212,10 +212,11 @@ final class AppModel {
         return true
     }
 
-    /// 다음 하트까지 남은 분 (가득이면 nil).
-    var nextHeartMinutes: Int? {
-        guard let seconds = heartBank.nextRegenIn(now: Date.now.timeIntervalSince1970) else { return nil }
-        return max(1, Int((seconds / 60).rounded(.up)))
+    /// 다음 하트까지 남은 시간 "M:SS" (가득이면 nil). 뷰의 1초 틱(TimelineView)과 함께 쓴다.
+    func nextHeartCountdown(now: Date = .now) -> String? {
+        guard let seconds = heartBank.nextRegenIn(now: now.timeIntervalSince1970) else { return nil }
+        let s = max(0, Int(seconds.rounded(.up)))
+        return String(format: "%d:%02d", s / 60, s % 60)
     }
 
     /// 경과 시간만큼 하트 자동 충전 (타이머/앱 활성화 시 호출).
