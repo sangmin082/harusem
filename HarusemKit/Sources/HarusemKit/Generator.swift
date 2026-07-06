@@ -30,6 +30,7 @@ public struct DailyPuzzles: Equatable, Codable, Sendable {
 public enum GeneratorError: Error, Equatable {
     case invalidDateKey(String)
     case exhausted(dateKey: String)
+    case invalidLevel(Int)
 }
 
 /// 날짜 기반 결정적 퍼즐 생성기.
@@ -94,6 +95,27 @@ public struct PuzzleGenerator: Sendable {
             }
         }
         throw GeneratorError.exhausted(dateKey: dateKey)
+    }
+
+    /// 단계(레벨) 진행용 퍼즐. 같은 레벨 번호 → 항상 같은 문제 (결정성 유지).
+    ///
+    /// 난이도는 3레벨마다 한 단계씩 올라 13레벨부터 최고 프로필로 고정된다
+    /// (레벨 1~3 = 프로필 0, 4~6 = 1, 7~9 = 2, 10~12 = 3, 13+ = 4).
+    public func levelPuzzle(_ level: Int) throws -> Puzzle {
+        guard level >= 1 else { throw GeneratorError.invalidLevel(level) }
+        let profileIndex = Self.profileIndex(forLevel: level)
+        for round in 0..<Self.maxRounds {
+            var rng = SplitMix64(
+                seed: FNV1a.hash("harusem/v\(Self.version)/level/\(level)/\(round)"))
+            if let puzzle = generatePuzzle(index: profileIndex, minScore: -.infinity, rng: &rng) {
+                return puzzle
+            }
+        }
+        throw GeneratorError.exhausted(dateKey: "level/\(level)")
+    }
+
+    static func profileIndex(forLevel level: Int) -> Int {
+        min(targetRanges.count - 1, (level - 1) / 3)
     }
 
     /// Date → 유저 로컬 "YYYY-MM-DD" 키.

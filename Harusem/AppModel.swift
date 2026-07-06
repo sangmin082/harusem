@@ -2,56 +2,74 @@ import Foundation
 import Observation
 import HarusemKit
 
-/// 엔진(DailySession/TileSelection)과 UI 사이의 브리지.
-/// 진행 상태는 스냅샷(Codable)으로 UserDefaults에 저장한다.
+/// 엔진과 UI 사이의 브리지 — 레벨(단계) 진행 방식.
+/// 레벨 1부터 한 문제씩 클리어(별 1개 이상)하면 다음 레벨이 열린다.
+/// 별 3개 만점이 아니면 하트 1개 차감. 진행 상태는 UserDefaults에 저장한다.
 @Observable
 @MainActor
 final class AppModel {
+    /// 현재 플레이 중인 레벨의 1문제 세션.
     private(set) var session: DailySession
     private(set) var selection = TileSelection()
-    private(set) var records: PlayerRecords
+    /// 현재 플레이 중인 레벨 번호 (1부터).
+    private(set) var level: Int
+    /// 해금된 최고 레벨 (= 마지막으로 클리어한 레벨 + 1).
+    private(set) var maxLevel: Int
+    /// 레벨별 최고 별점 (클리어한 레벨만 기록).
+    private(set) var bestStars: [Int: Int]
+    /// 날짜별 클리어 수 (스트릭/히트맵용). 키는 "YYYY-MM-DD".
+    private(set) var activity: [String: Int]
     let store = StoreService()
     let ads = AdsService()
     /// 무효 병합 피드백 트리거 (.sensoryFeedback 용 카운터).
     private(set) var rejectionCount = 0
-    /// 아카이브(과거 날짜) 플레이 중인지. 아카이브 진행은 스냅샷 저장하지 않는다.
-    private(set) var isArchivePlay = false
-    /// 보너스 문제(광고 보고 한 문제 더) 플레이 중인지. 기록/스냅샷에 영향을 주지 않는다.
-    private(set) var isBonusPlay = false
-    /// 이번 세션 입장 비용을 이미 지불했는지 (다시 플레이 = 하트 선차감).
-    /// true면 하트 0이어도 플레이 차단하지 않는다.
-    private(set) var entryPaid = false
     /// 현재 표시 중인 힌트 (병합/undo/리셋 시 사라짐).
     private(set) var currentHint: SolutionStep?
     /// 힌트를 눌렀지만 현재 상태에서 도달 불가한 경우.
     private(set) var hintDeadEnd = false
 
-    /// 하루 무료 힌트 수. 소진 후는 리워드 광고 충전 예정 (AdGate.rewardedHintAvailable).
+    /// 하루 무료 힌트 수. 소진 후는 리워드 광고로 충전.
     static let dailyHintAllowance = 3
+    /// 전면 광고 주기: N번째 클리어마다 1회.
+    static let interstitialEvery = 3
 
     private let defaults: UserDefaults
     private(set) var heartBank: HeartBank
 
-    private static let snapshotKey = "harusem.session.snapshot"
-    private static let recordsKey = "harusem.records"
+    private static let levelKey = "harusem.level.playing"
+    private static let maxLevelKey = "harusem.level.max"
+    private static let starsKey = "harusem.level.beststars"
+    private static let activityKey = "harusem.level.activity"
+    private static let snapshotKey = "harusem.level.snapshot"
+    private static let completionsKey = "harusem.level.completions"
     private static let hintsKey = "harusem.hints.used"
-    private static let bonusCountKey = "harusem.bonus.count"
     private static let heartsKey = "harusem.hearts"
-
-    /// 아카이브 제공 시작일 (서비스 개시일).
-    static let archiveEpoch = "2026-07-01"
-    /// 아카이브 무료 열람 기간 (최근 N일). 그 이전은 IAP 필요.
-    static let freeArchiveDays = 7
 
     init(defaults: UserDefaults = .standard, now: Date = .now) {
         self.defaults = defaults
-        self.session = Self.loadOrCreateSession(defaults: defaults, now: now)
-        if let data = defaults.data(forKey: Self.recordsKey),
-           let decoded = try? JSONDecoder().decode(PlayerRecords.self, from: data) {
-            self.records = decoded
+
+        let storedMax = defaults.integer(forKey: Self.maxLevelKey)
+        let maxLevel = max(1, storedMax)
+        self.maxLevel = maxLevel
+        let storedLevel = defaults.integer(forKey: Self.levelKey)
+        let level = (1...maxLevel).contains(storedLevel) ? storedLevel : maxLevel
+        self.level = level
+
+        if let data = defaults.data(forKey: Self.starsKey),
+           let decoded = try? JSONDecoder().decode([Int: Int].self, from: data) {
+            self.bestStars = decoded
         } else {
-            self.records = PlayerRecords()
+            self.bestStars = [:]
         }
+        if let data = defaults.data(forKey: Self.activityKey),
+           let decoded = try? JSONDecoder().decode([String: Int].self, from: data) {
+            self.activity = decoded
+        } else {
+            self.activity = [:]
+        }
+
+        self.session = Self.loadOrCreateSession(level: level, defaults: defaults)
+
         if let data = defaults.data(forKey: Self.heartsKey),
            let decoded = try? JSONDecoder().decode(HeartBank.self, from: data) {
             self.heartBank = decoded
@@ -59,20 +77,28 @@ final class AppModel {
             self.heartBank = HeartBank(now: now.timeIntervalSince1970)
         }
         refreshHearts(now: now)
-        // 복원된 세션이 이미 완료 상태면 기록 누락을 보정한다 (멱등).
-        recordDayIfComplete()
     }
 
-    private static func loadOrCreateSession(defaults: UserDefaults, now: Date) -> DailySession {
-        let dateKey = PuzzleGenerator.dateKey(for: now)
-        // 생성기는 결정적이며 연속 30일 전수 테스트로 검증됨 — 유효한 날짜 키에서 실패하지 않는다.
-        let daily = try! PuzzleGenerator().puzzles(for: dateKey)
-        if let data = defaults.data(forKey: snapshotKey),
+    /// 레벨 퍼즐로 1문제 세션 생성. 저장된 진행 스냅샷이 같은 레벨이면 복원한다.
+    private static func loadOrCreateSession(level: Int, defaults: UserDefaults?) -> DailySession {
+        // 생성기는 결정적이며 레벨 1~50 전수 테스트로 검증됨 — 유효한 레벨에서 실패하지 않는다.
+        let puzzle = try! PuzzleGenerator().levelPuzzle(level)
+        let daily = DailyPuzzles(
+            dateKey: Self.sessionKey(level: level),
+            generatorVersion: PuzzleGenerator.version,
+            puzzles: [puzzle]
+        )
+        if let defaults,
+           let data = defaults.data(forKey: snapshotKey),
            let snapshot = try? JSONDecoder().decode(DailySession.Snapshot.self, from: data),
            let restored = DailySession(daily: daily, snapshot: snapshot) {
             return restored
         }
         return DailySession(daily: daily)
+    }
+
+    private static func sessionKey(level: Int) -> String {
+        "level-\(level)"
     }
 
     // MARK: - 입력
@@ -109,75 +135,89 @@ final class AppModel {
         save()
     }
 
-    /// 현재 문제의 별점을 확정하고 다음 문제로. 마지막 문제였으면 하루 기록을 남긴다.
-    func submit() {
+    /// 현재 레벨의 별점을 확정한다.
+    /// 별 3개 미만이면 하트 1개 차감. 별 1개 이상이면 클리어 → 다음 레벨 해금.
+    func submit(now: Date = .now) {
         guard !session.isDayComplete else { return }
         selection.clear()
         clearHint()
         session.submitCurrent()
-        recordDayIfComplete()
-        // 하트 규칙: 별 3개 만점 없이 하루를 끝내면 하트 1개 차감 (보너스 제외)
-        if session.isDayComplete, !isBonusPlay, session.totalStars < session.maxStars {
-            heartBank.spend(now: Date.now.timeIntervalSince1970)
+        let stars = session.totalStars
+
+        if stars < 3 {
+            refreshHearts(now: now)
+            heartBank.spend(now: now.timeIntervalSince1970)
             saveHearts()
         }
-        // 전면 광고는 오늘의 정규 5문제 완료 시에만 (보너스/아카이브 제외).
-        // 결과 화면 전환 애니메이션과 겹치지 않게 잠깐 기다렸다 띄운다.
-        if session.isDayComplete, !isBonusPlay, !isArchivePlay {
-            let adsRemoved = store.ownsRemoveAds
-            Task {
-                try? await Task.sleep(for: .seconds(0.7))
-                ads.showInterstitialAfterDayComplete(adsRemoved: adsRemoved)
+
+        if stars >= 1 {
+            if (bestStars[level] ?? 0) < stars {
+                bestStars[level] = stars
+            }
+            if level == maxLevel {
+                maxLevel = level + 1
+            }
+            activity[PuzzleGenerator.dateKey(for: now), default: 0] += 1
+            saveProgress()
+
+            // 전면 광고: N번째 클리어마다. 결과 화면 전환과 겹치지 않게 잠깐 대기.
+            let completions = defaults.integer(forKey: Self.completionsKey) + 1
+            defaults.set(completions, forKey: Self.completionsKey)
+            if completions % Self.interstitialEvery == 0 {
+                let adsRemoved = store.ownsRemoveAds
+                Task {
+                    try? await Task.sleep(for: .seconds(0.7))
+                    ads.showInterstitialAfterDayComplete(adsRemoved: adsRemoved)
+                }
             }
         }
         save()
     }
 
-    // MARK: - 보너스 문제 (광고 보고 한 문제 더)
+    // MARK: - 레벨 이동
 
-    /// 오늘 몇 번째 보너스 문제인지 (1부터 표시용).
-    var currentBonusNumber: Int {
-        max(1, bonusCount())
+    /// 레벨 목록에서 선택. 진행 중인 현재 레벨을 다시 누르면 이어한다 (리셋하지 않음).
+    func openLevel(_ n: Int) {
+        guard (1...maxLevel).contains(n) else { return }
+        if n == level, !session.isDayComplete { return }
+        startLevel(n)
     }
 
-    /// 리워드 광고 시청 완료 → 보너스 문제 시작. 오늘 5문제(또는 이전 보너스) 완료 후에만.
-    func startBonusViaAd() {
-        guard session.isDayComplete, !isArchivePlay else { return }
-        ads.showRewarded { [weak self] in
-            self?.enterBonus()
-        }
+    /// 방금 클리어한 레벨의 다음 레벨로.
+    func advanceToNextLevel() {
+        guard session.isDayComplete else { return }
+        startLevel(min(level + 1, maxLevel))
     }
 
-    func exitBonus(now: Date = .now) {
-        guard isBonusPlay else { return }
+    /// 현재 레벨 처음부터 다시 (실패 후 재도전 / 클리어 후 다시 플레이).
+    func retryLevel() {
+        startLevel(level)
+    }
+
+    private func startLevel(_ n: Int) {
         selection = TileSelection()
         clearHint()
-        isBonusPlay = false
-        entryPaid = false
-        session = Self.loadOrCreateSession(defaults: defaults, now: now)
+        level = n
+        defaults.set(n, forKey: Self.levelKey)
+        session = Self.loadOrCreateSession(level: n, defaults: nil)
+        save()
     }
 
-    private func enterBonus(now: Date = .now) {
-        let today = PuzzleGenerator.dateKey(for: now)
-        let number = bonusCount(now: now)
-        guard let puzzle = try? PuzzleGenerator().bonusPuzzle(for: today, number: number) else { return }
-        save()  // 오늘 세션(완료 상태) 먼저 저장
-        selection = TileSelection()
-        clearHint()
-        session = DailySession(daily: DailyPuzzles(
-            dateKey: today,
-            generatorVersion: PuzzleGenerator.version,
-            puzzles: [puzzle]
-        ))
-        isBonusPlay = true
-        defaults.set([today: number + 1], forKey: Self.bonusCountKey)
+    /// 현재 레벨에서 기록한 최고 별점 (미클리어면 nil).
+    var bestStarsForCurrentLevel: Int? {
+        bestStars[level]
     }
 
-    /// 날짜별 보너스 순번 (결정적 생성이라 순번을 저장해야 매번 새 문제가 나온다).
-    private func bonusCount(now: Date = .now) -> Int {
-        let today = PuzzleGenerator.dateKey(for: now)
-        guard let stored = defaults.dictionary(forKey: Self.bonusCountKey) as? [String: Int] else { return 0 }
-        return stored[today] ?? 0
+    /// 클리어한 레벨에서 모은 별 합계.
+    var totalStarsEarned: Int {
+        bestStars.values.reduce(0, +)
+    }
+
+    /// 결과 공유 텍스트. 예: "하루셈 Lv.7 ★★☆ · ⭐️ 18".
+    var shareText: String {
+        let n = session.isDayComplete ? session.totalStars : 0
+        let starLine = String(repeating: "★", count: n) + String(repeating: "☆", count: 3 - n)
+        return "하루셈 Lv.\(level) \(starLine) · ⭐️ \(totalStarsEarned)"
     }
 
     // MARK: - 하트
@@ -185,31 +225,9 @@ final class AppModel {
     var hearts: Int { heartBank.hearts }
 
     /// 하트가 없어 새 플레이를 시작할 수 없는 상태.
-    /// 이미 진행 중인 판(이동 있음), 완료된 하루, 보너스(광고 입장), 선차감된 다시 플레이는 막지 않는다.
+    /// 이미 진행 중인 판(이동 있음)이나 결과 화면은 막지 않는다.
     var needsHeartToPlay: Bool {
-        hearts == 0 && !isBonusPlay && !entryPaid && !session.isDayComplete
-            && session.currentIndex == 0 && session.game.moves.isEmpty
-    }
-
-    /// 하트 1개를 선차감하고 해당 날짜를 처음부터 다시 플레이한다 (오늘 포함).
-    /// 하트가 없거나 잠긴 날짜면 false.
-    @discardableResult
-    func replay(dateKey: String) -> Bool {
-        let today = PuzzleGenerator.dateKey(for: .now)
-        guard dateKey == today || (dateKey < today && !isArchiveLocked(dateKey)) else { return false }
-        guard let daily = try? PuzzleGenerator().puzzles(for: dateKey) else { return false }
-        refreshHearts()
-        guard heartBank.spend(now: Date.now.timeIntervalSince1970) else { return false }
-        saveHearts()
-
-        selection = TileSelection()
-        clearHint()
-        isBonusPlay = false
-        isArchivePlay = dateKey != today
-        entryPaid = true
-        session = DailySession(daily: daily)
-        save()  // 오늘이면 새 진행 스냅샷으로 교체
-        return true
+        hearts == 0 && !session.isDayComplete && session.game.moves.isEmpty
     }
 
     /// 다음 하트까지 남은 시간 "M:SS" (가득이면 nil). 뷰의 1초 틱(TimelineView)과 함께 쓴다.
@@ -282,7 +300,7 @@ final class AppModel {
         hintDeadEnd = false
     }
 
-    /// 힌트 예산은 실제 오늘 날짜 기준 (아카이브 플레이도 같은 예산을 쓴다).
+    /// 힌트 예산은 오늘 날짜 기준.
     private func hintsUsedToday(now: Date = .now) -> Int {
         let today = PuzzleGenerator.dateKey(for: now)
         guard let stored = defaults.dictionary(forKey: Self.hintsKey) as? [String: Int] else { return 0 }
@@ -295,70 +313,33 @@ final class AppModel {
         defaults.set([today: hintsUsedToday(now: now) + 1], forKey: Self.hintsKey)
     }
 
-    // MARK: - 아카이브
+    // MARK: - 통계
 
-    /// 오늘 이전(어제 → archiveEpoch) 날짜 목록. 최신순.
-    var archiveDateKeys: [String] {
-        var keys: [String] = []
-        var cursor = DateKey.previous(todayKey())
-        while let key = cursor, key >= Self.archiveEpoch {
-            keys.append(key)
+    /// 연속 플레이 일수 (오늘 또는 어제로 끝나는 스트릭 — 오늘 아직 안 했어도 유지 중으로 본다).
+    var currentStreak: Int {
+        let today = PuzzleGenerator.dateKey(for: .now)
+        var cursor: String? = activity[today] != nil ? today : DateKey.previous(today)
+        var count = 0
+        while let key = cursor, activity[key] != nil {
+            count += 1
             cursor = DateKey.previous(key)
         }
-        return keys
+        return count
     }
 
-    /// 무료 열람 범위(최근 N일) 밖이고 아카이브 IAP가 없으면 잠김.
-    func isArchiveLocked(_ dateKey: String) -> Bool {
-        guard !store.ownsArchive else { return false }
-        let free = archiveDateKeys.prefix(Self.freeArchiveDays)
-        return !free.contains(dateKey)
-    }
+    /// 클리어한 레벨 수.
+    var levelsCleared: Int { bestStars.count }
 
-    /// 과거 날짜 퍼즐 플레이 시작 (결정적 생성기라 오프라인 재생성 가능).
-    func enterArchive(dateKey: String) {
-        guard dateKey < todayKey(), !isArchiveLocked(dateKey),
-              let daily = try? PuzzleGenerator().puzzles(for: dateKey)
-        else { return }
-        save()  // 오늘 진행 먼저 저장
-        selection = TileSelection()
-        clearHint()
-        session = DailySession(daily: daily)
-        isArchivePlay = true
-        isBonusPlay = false  // 보너스 플레이 중 캘린더로 진입하는 경로 정리
-        entryPaid = false  // 첫 도전은 무료 시작 (완료 시 규칙으로만 차감)
-    }
+    /// 별 3개 만점 레벨 수.
+    var perfectLevels: Int { bestStars.values.filter { $0 == 3 }.count }
 
-    /// 아카이브에서 나와 오늘 세션으로 복귀.
-    func exitArchive(now: Date = .now) {
-        guard isArchivePlay else { return }
-        selection = TileSelection()
-        clearHint()
-        isArchivePlay = false
-        entryPaid = false
-        session = Self.loadOrCreateSession(defaults: defaults, now: now)
-    }
-
-    private func todayKey(now: Date = .now) -> String {
-        isArchivePlay ? PuzzleGenerator.dateKey(for: now) : session.daily.dateKey
-    }
-
-    /// 오늘 세션 기준 연속 플레이 일수.
-    var currentStreak: Int {
-        records.streak(endingAt: session.daily.dateKey)
-    }
-
-    /// 공유 텍스트 (스트릭이 2일 이상이면 🔥 라인 추가).
-    var shareTextWithStreak: String {
-        let base = session.shareText()
-        let streak = currentStreak
-        return streak > 1 ? base + "\n🔥 \(streak)일 연속" : base
-    }
+    /// 플레이한 날 수 (클리어 기준).
+    var daysPlayed: Int { activity.count }
 
     struct RecentDay: Identifiable {
         let dateKey: String
-        /// 그날 획득한 총 별 (기록 없으면 nil).
-        let stars: Int?
+        /// 그날 클리어한 레벨 수 (기록 없으면 nil).
+        let cleared: Int?
         var id: String { dateKey }
     }
 
@@ -372,44 +353,24 @@ final class AppModel {
             cursor = DateKey.previous(key)
         }
         return keys.reversed().map { key in
-            RecentDay(dateKey: key, stars: records.day(for: key)?.totalStars)
+            RecentDay(dateKey: key, cleared: activity[key])
         }
     }
 
-    private func recordDayIfComplete() {
-        // 보너스 문제는 기록에 반영하지 않는다 (오늘 기록을 1문제 세션이 덮어쓰면 안 됨)
-        guard session.isDayComplete, !isBonusPlay else { return }
-        let stars = session.stars.compactMap { $0 }
-        guard stars.count == session.daily.puzzles.count else { return }
-        let newRecord = DayRecord(dateKey: session.daily.dateKey, stars: stars)
-        // 아카이브 재도전 등으로 다시 완료해도 최고 기록만 유지한다.
-        if let existing = records.day(for: newRecord.dateKey),
-           existing.totalStars >= newRecord.totalStars {
-            return
+    private func saveProgress() {
+        defaults.set(maxLevel, forKey: Self.maxLevelKey)
+        if let data = try? JSONEncoder().encode(bestStars) {
+            defaults.set(data, forKey: Self.starsKey)
         }
-        records.record(newRecord)
-        if let data = try? JSONEncoder().encode(records) {
-            defaults.set(data, forKey: Self.recordsKey)
+        if let data = try? JSONEncoder().encode(activity) {
+            defaults.set(data, forKey: Self.activityKey)
         }
     }
 
     // MARK: - 라이프사이클
 
-    /// 앱이 다시 활성화될 때 날짜가 바뀌었으면 새 하루 세션으로 교체한다.
-    /// 아카이브 플레이 중이면 그대로 두고, 나갈 때 오늘 세션을 새로 읽는다.
-    func refreshForDateChange(now: Date = .now) {
-        guard !isArchivePlay, !isBonusPlay,
-              PuzzleGenerator.dateKey(for: now) != session.daily.dateKey
-        else { return }
-        selection = TileSelection()
-        clearHint()
-        entryPaid = false
-        session = Self.loadOrCreateSession(defaults: defaults, now: now)
-    }
-
-    /// 오늘 세션만 스냅샷 저장 (아카이브/보너스 진행은 저장하지 않는다).
+    /// 진행 스냅샷 저장 (백그라운드 전환/이동 시).
     func save() {
-        guard !isArchivePlay, !isBonusPlay else { return }
         if let data = try? JSONEncoder().encode(session.snapshot) {
             defaults.set(data, forKey: Self.snapshotKey)
         }

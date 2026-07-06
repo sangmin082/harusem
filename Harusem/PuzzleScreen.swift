@@ -16,45 +16,24 @@ struct PuzzleScreen: View {
 
     var body: some View {
         VStack(spacing: 20) {
-            if model.isBonusPlay {
-                HStack(alignment: .center, spacing: 12) {
-                    Button {
-                        model.exitBonus()
-                    } label: {
-                        Label("Back to results", systemImage: "chevron.left")
-                            .font(.subheadline)
-                    }
-                    Spacer()
-                    Text("Bonus puzzle \(model.currentBonusNumber)")
-                        .font(.subheadline.weight(.semibold))
-                        .foregroundStyle(.secondary)
+            HStack(alignment: .center, spacing: 12) {
+                Text("Level \(model.level)")
+                    .font(.headline)
+                if let best = model.bestStarsForCurrentLevel {
+                    // 이미 클리어한 레벨 다시 플레이 중: 최고 기록 표시
+                    Text(verbatim: String(repeating: "★", count: best)
+                         + String(repeating: "☆", count: 3 - best))
+                        .font(.caption)
+                        .foregroundStyle(.yellow)
                 }
-            } else if model.isArchivePlay {
-                HStack(alignment: .center, spacing: 12) {
-                    Button {
-                        model.exitArchive()
-                    } label: {
-                        Label("Back to today", systemImage: "chevron.left")
-                            .font(.subheadline)
-                    }
-                    Spacer()
-                    Text(verbatim: session.daily.dateKey)
-                        .font(.subheadline)
-                        .foregroundStyle(.secondary)
-                        .monospacedDigit()
+                Spacer()
+                Button {
+                    showHelp = true
+                } label: {
+                    Image(systemName: "questionmark.circle")
+                        .font(.title3)
                 }
-                ProgressHeader(session: session)
-            } else {
-                HStack(alignment: .center, spacing: 12) {
-                    ProgressHeader(session: session)
-                    Button {
-                        showHelp = true
-                    } label: {
-                        Image(systemName: "questionmark.circle")
-                            .font(.title3)
-                    }
-                    .accessibilityLabel(Text("How to play"))
-                }
+                .accessibilityLabel(Text("How to play"))
             }
             targetSection
             Spacer(minLength: 8)
@@ -169,7 +148,7 @@ struct PuzzleScreen: View {
                 Button {
                     model.submit()
                 } label: {
-                    Label("Next puzzle", systemImage: "arrow.right")
+                    Label("Finish", systemImage: "checkmark")
                 }
                 .buttonStyle(.borderedProminent)
             } else {
@@ -205,7 +184,7 @@ private struct OutOfHeartsCard: View {
             }
             .buttonStyle(.borderedProminent)
             .disabled(!model.ads.rewardedReady)
-            Text("Hearts refill every 30 minutes.")
+            Text("Hearts refill every 10 minutes.")
                 .font(.footnote)
                 .foregroundStyle(.secondary)
         }
@@ -223,33 +202,6 @@ extension Op {
         case .subtract: "Subtract"
         case .multiply: "Multiply"
         case .divide: "Divide"
-        }
-    }
-}
-
-/// 상단: 문제별 진행 표시 (확정 별점 / 현재 / 남은 문제).
-private struct ProgressHeader: View {
-    let session: DailySession
-
-    var body: some View {
-        HStack(spacing: 8) {
-            ForEach(0..<session.daily.puzzles.count, id: \.self) { index in
-                if let earned = session.stars[index] {
-                    Text("★\(earned)")
-                        .font(.caption2.bold())
-                        .padding(.horizontal, 6)
-                        .padding(.vertical, 3)
-                        .background(Capsule().fill(Color.yellow.opacity(0.25)))
-                } else {
-                    Circle()
-                        .fill(index == session.currentIndex ? Color.accentColor : Color(.systemFill))
-                        .frame(width: 10, height: 10)
-                }
-            }
-            Spacer()
-            Text("Puzzle \(session.currentIndex + 1) of \(session.daily.puzzles.count)")
-                .font(.subheadline)
-                .foregroundStyle(.secondary)
         }
     }
 }

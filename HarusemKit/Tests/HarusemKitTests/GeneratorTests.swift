@@ -129,4 +129,50 @@ struct GeneratorTests {
             try generator.bonusPuzzle(for: "bad", number: 0)
         }
     }
+
+    @Test("레벨 퍼즐: 같은 레벨 → 항상 같은 문제 (결정성)")
+    func levelDeterminism() throws {
+        let generator = PuzzleGenerator()
+        for level in [1, 2, 7, 13, 40, 200] {
+            let first = try generator.levelPuzzle(level)
+            for _ in 0..<10 {
+                let again = try generator.levelPuzzle(level)
+                #expect(again == first)
+            }
+        }
+    }
+
+    @Test("레벨 1~50 전수: 생성 성공 + 유효성")
+    func levelsGenerateAndAreValid() throws {
+        let generator = PuzzleGenerator()
+        var targets: Set<Int> = []
+        for level in 1...50 {
+            let puzzle = try generator.levelPuzzle(level)
+            let result = Solver.solve(numbers: puzzle.numbers, target: puzzle.target)
+            #expect(result.isSolvable)
+            #expect(puzzle.numbers.count == 6)
+            #expect(puzzle.minOperations >= 3)
+            #expect(!puzzle.numbers.contains(puzzle.target))
+            targets.insert(puzzle.target)
+        }
+        #expect(targets.count >= 30)  // 레벨이 다르면 대체로 다른 문제
+    }
+
+    @Test("레벨 난이도 프로필: 3레벨마다 상승, 13레벨부터 최고 고정")
+    func levelProfileRamp() {
+        #expect(PuzzleGenerator.profileIndex(forLevel: 1) == 0)
+        #expect(PuzzleGenerator.profileIndex(forLevel: 3) == 0)
+        #expect(PuzzleGenerator.profileIndex(forLevel: 4) == 1)
+        #expect(PuzzleGenerator.profileIndex(forLevel: 12) == 3)
+        #expect(PuzzleGenerator.profileIndex(forLevel: 13) == 4)
+        #expect(PuzzleGenerator.profileIndex(forLevel: 9_999) == 4)
+    }
+
+    @Test("레벨 0 이하는 에러")
+    func invalidLevelRejected() {
+        let generator = PuzzleGenerator()
+        #expect(throws: GeneratorError.invalidLevel(0)) {
+            try generator.levelPuzzle(0)
+        }
+    }
 }

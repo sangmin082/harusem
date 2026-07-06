@@ -13,11 +13,12 @@ struct StatsView: View {
         NavigationStack {
             List {
                 Section {
+                    statRow("🏔️", "Highest level", model.maxLevel)
+                    statRow("✅", "Levels cleared", model.levelsCleared)
+                    statRow("⭐️", "Total stars", model.totalStarsEarned)
+                    statRow("💯", "Perfect levels", model.perfectLevels)
                     statRow("🔥", "Current streak", model.currentStreak)
-                    statRow("🏆", "Longest streak", model.records.longestStreak)
-                    statRow("⭐️", "Total stars", model.records.totalStars)
-                    statRow("💯", "Perfect days", model.records.perfectDayCount)
-                    statRow("📅", "Days played", model.records.daysPlayed)
+                    statRow("📅", "Days played", model.daysPlayed)
                 }
 
                 Section {
@@ -44,17 +45,18 @@ struct StatsView: View {
                     if reminderDenied {
                         Text("Allow notifications in Settings to enable reminders.")
                     } else {
-                        Text("Get a nudge when new puzzles arrive.")
+                        Text("Get a daily nudge to keep your streak.")
                     }
                 }
 
                 Section {
-                    if model.store.products.isEmpty {
+                    let products = model.store.products.filter { $0.id == StoreService.removeAdsID }
+                    if products.isEmpty {
                         Text("Store is unavailable right now.")
                             .font(.footnote)
                             .foregroundStyle(.secondary)
                     } else {
-                        ForEach(model.store.products, id: \.id) { product in
+                        ForEach(products, id: \.id) { product in
                             productRow(product)
                         }
                     }
@@ -102,22 +104,22 @@ struct StatsView: View {
         }
     }
 
-    /// 최근 14일 별점 히트맵 (하루 최대 15개 기준 농도).
+    /// 최근 14일 클리어 히트맵 (하루 5레벨 기준 농도).
     private var recentStrip: some View {
         HStack(spacing: 5) {
             ForEach(model.recentDays(14)) { day in
                 RoundedRectangle(cornerRadius: 4)
-                    .fill(cellColor(stars: day.stars))
+                    .fill(cellColor(cleared: day.cleared))
                     .frame(height: 22)
-                    .accessibilityLabel(Text(verbatim: "\(day.dateKey): \(day.stars ?? 0)"))
+                    .accessibilityLabel(Text(verbatim: "\(day.dateKey): \(day.cleared ?? 0)"))
             }
         }
         .padding(.vertical, 4)
     }
 
-    private func cellColor(stars: Int?) -> Color {
-        guard let stars else { return Color(.systemFill) }
-        let ratio = Double(stars) / 15.0
+    private func cellColor(cleared: Int?) -> Color {
+        guard let cleared else { return Color(.systemFill) }
+        let ratio = min(1, Double(cleared) / 5.0)
         return Color.yellow.opacity(0.2 + 0.8 * ratio)
     }
 

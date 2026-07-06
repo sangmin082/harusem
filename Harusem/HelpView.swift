@@ -19,9 +19,9 @@ struct HelpView: View {
             ruleRow("checkmark.circle",
                     "Results must always be positive whole numbers.")
             ruleRow("arrow.uturn.backward",
-                    "Undo anytime. Five puzzles a day, harder as you go.")
+                    "Undo anytime. One puzzle per level — clear it to unlock the next.")
             ruleRow("heart.fill",
-                    "Imperfect days and replays cost one heart. Hearts refill every 30 minutes.")
+                    "Finish below 3 stars and you lose one heart. Hearts refill every 10 minutes.")
 
             Spacer()
 

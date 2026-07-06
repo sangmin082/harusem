@@ -121,6 +121,16 @@
         }
       }
     },
+    "Clear a level with at least one star to unlock the next.": {
+      "localizations": {
+        "ko": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "별 1개 이상으로 레벨을 클리어하면 다음 레벨이 열려요."
+          }
+        }
+      }
+    },
     "Combine two tiles with +, −, ×, ÷ to make a new number.": {
       "localizations": {
         "ko": {
@@ -191,6 +201,36 @@
         }
       }
     },
+    "Finish": {
+      "localizations": {
+        "ko": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "완료"
+          }
+        }
+      }
+    },
+    "Finish a puzzle with all 3 stars to keep your hearts.": {
+      "localizations": {
+        "ko": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "별 3개 만점이면 하트가 깎이지 않아요."
+          }
+        }
+      }
+    },
+    "Finish below 3 stars and you lose one heart. Hearts refill every 10 minutes.": {
+      "localizations": {
+        "ko": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "별 3개 미만으로 끝나면 하트 1개가 깎여요. 하트는 10분마다 충전됩니다."
+          }
+        }
+      }
+    },
     "Finish this puzzle with %@?": {
       "localizations": {
         "ko": {
@@ -231,6 +271,16 @@
         }
       }
     },
+    "Get a daily nudge to keep your streak.": {
+      "localizations": {
+        "ko": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "매일 알림으로 스트릭을 지켜보세요."
+          }
+        }
+      }
+    },
     "Get a nudge when new puzzles arrive.": {
       "localizations": {
         "ko": {
@@ -261,6 +311,16 @@
         }
       }
     },
+    "Hearts refill every 10 minutes.": {
+      "localizations": {
+        "ko": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "하트는 10분마다 1개씩 충전됩니다."
+          }
+        }
+      }
+    },
     "Hearts refill every 30 minutes.": {
       "localizations": {
         "ko": {
@@ -277,6 +337,16 @@
           "stringUnit": {
             "state": "translated",
             "value": "하트 %lld개"
+          }
+        }
+      }
+    },
+    "Highest level": {
+      "localizations": {
+        "ko": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "최고 레벨"
           }
         }
       }
@@ -351,6 +421,46 @@
         }
       }
     },
+    "Level %lld": {
+      "localizations": {
+        "ko": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "레벨 %lld"
+          }
+        }
+      }
+    },
+    "Level %lld cleared!": {
+      "localizations": {
+        "ko": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "레벨 %lld 클리어!"
+          }
+        }
+      }
+    },
+    "Levels": {
+      "localizations": {
+        "ko": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "레벨"
+          }
+        }
+      }
+    },
+    "Levels cleared": {
+      "localizations": {
+        "ko": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "클리어한 레벨"
+          }
+        }
+      }
+    },
     "Longest streak": {
       "localizations": {
         "ko": {
@@ -401,6 +511,16 @@
         }
       }
     },
+    "Next level": {
+      "localizations": {
+        "ko": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "다음 레벨"
+          }
+        }
+      }
+    },
     "Next move: %@": {
       "localizations": {
         "ko": {
@@ -431,6 +551,16 @@
         }
       }
     },
+    "One heart lost": {
+      "localizations": {
+        "ko": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "하트 1개 차감"
+          }
+        }
+      }
+    },
     "Out of hearts": {
       "localizations": {
         "ko": {
@@ -451,6 +581,26 @@
         }
       }
     },
+    "Perfect levels": {
+      "localizations": {
+        "ko": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "만점 레벨"
+          }
+        }
+      }
+    },
+    "Perfect — no heart lost!": {
+      "localizations": {
+        "ko": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "만점! 하트가 깎이지 않았어요"
+          }
+        }
+      }
+    },
     "Play again": {
       "localizations": {
         "ko": {
@@ -467,6 +617,16 @@
           "stringUnit": {
             "state": "translated",
             "value": "문제 %1$lld / %2$lld"
+          }
+        }
+      }
+    },
+    "Reach at least one star to clear the level.": {
+      "localizations": {
+        "ko": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "별 1개 이상을 받아야 레벨 클리어예요."
           }
         }
       }
@@ -537,6 +697,16 @@
           "stringUnit": {
             "state": "translated",
             "value": "결과 공유"
+          }
+        }
+      }
+    },
+    "So close!": {
+      "localizations": {
+        "ko": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "아쉬워요!"
           }
         }
       }
@@ -621,6 +791,36 @@
         }
       }
     },
+    "Total stars: %lld": {
+      "localizations": {
+        "ko": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "모은 별: %lld"
+          }
+        }
+      }
+    },
+    "Total stars: %lld, highest level: %lld": {
+      "localizations": {
+        "ko": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "모은 별 %lld, 최고 레벨 %lld"
+          }
+        }
+      }
+    },
+    "Try again": {
+      "localizations": {
+        "ko": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "다시 도전"
+          }
+        }
+      }
+    },
     "Undo": {
       "localizations": {
         "ko": {
@@ -637,6 +837,16 @@
           "stringUnit": {
             "state": "translated",
             "value": "언제든 되돌릴 수 있어요. 하루 5문제, 갈수록 어려워져요."
+          }
+        }
+      }
+    },
+    "Undo anytime. One puzzle per level — clear it to unlock the next.": {
+      "localizations": {
+        "ko": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "되돌리기는 언제든 가능해요. 레벨마다 한 문제 — 클리어하면 다음 레벨이 열려요."
           }
         }
       }
@@ -687,6 +897,16 @@
           "stringUnit": {
             "state": "translated",
             "value": "오차 ±10 이내는 별 2개, ±25 이내는 별 1개예요."
+          }
+        }
+      }
+    },
+    "You reached %lld — target was %lld.": {
+      "localizations": {
+        "ko": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "%lld까지 만들었어요 — 목표는 %lld였어요."
           }
         }
       }

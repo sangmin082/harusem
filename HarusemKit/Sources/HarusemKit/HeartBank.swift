@@ -1,10 +1,10 @@
 /// 하트(플레이 에너지) 은행.
-/// - 최대 5개, 30분마다 1개 자동 충전 (지연 계산 — 앱이 꺼져 있어도 시간만큼 쌓인다)
-/// - 하루를 별 3개 만점 없이 끝내면 1개 소비, 광고 시청으로 1개 충전
+/// - 최대 10개, 10분마다 1개 자동 충전 (지연 계산 — 앱이 꺼져 있어도 시간만큼 쌓인다)
+/// - 문제를 별 3개 만점 없이 끝내면 1개 소비, 광고 시청으로 1개 충전
 /// 시각(now)을 epoch 초로 주입받으므로 결정적으로 테스트할 수 있다.
 public struct HeartBank: Codable, Equatable, Sendable {
-    public static let capacity = 5
-    public static let regenInterval: Double = 30 * 60
+    public static let capacity = 10
+    public static let regenInterval: Double = 10 * 60
 
     public private(set) var hearts: Int
     /// 다음 충전 계산의 기준 시각 (epoch 초). 가득 차 있는 동안엔 계속 현재로 밀린다.
