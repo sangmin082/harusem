@@ -37,6 +37,7 @@ struct RootView: View {
                     .tag(Tab.settings)
             }
         }
+        .background(AppBackground())
         .sheet(isPresented: $showHearts) { HeartsView(model: model) }
         .onReceive(heartTimer) { _ in
             model.refreshHearts()

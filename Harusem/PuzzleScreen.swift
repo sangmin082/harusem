@@ -122,6 +122,12 @@ struct PuzzleScreen: View {
         .padding(.vertical, 16)
         .padding(.horizontal, 20)
         .harusemCard(cornerRadius: 24)
+        .overlay(
+            // 무지개 포인트 테두리
+            RoundedRectangle(cornerRadius: 24)
+                .strokeBorder(Theme.rainbowGradient, lineWidth: 1.5)
+                .opacity(0.45)
+        )
         .animation(.bouncy, value: session.game.isSolved)
         .accessibilityElement(children: .combine)
     }
@@ -322,6 +328,25 @@ private struct TileButton: View {
 private struct OperatorRow: View {
     var model: AppModel
 
+    /// 연산자별 고유 색 (알록달록 테마).
+    private func gradient(for op: Op) -> LinearGradient {
+        switch op {
+        case .add: Theme.greenGradient
+        case .subtract: Theme.tealGradient
+        case .multiply: Theme.flameGradient
+        case .divide: Theme.purpleGradient
+        }
+    }
+
+    private func color(for op: Op) -> Color {
+        switch op {
+        case .add: Theme.success
+        case .subtract: Theme.teal
+        case .multiply: Theme.flame
+        case .divide: Theme.purple
+        }
+    }
+
     var body: some View {
         HStack(spacing: 14) {
             ForEach(Op.allCases, id: \.self) { op in
@@ -335,12 +360,14 @@ private struct OperatorRow: View {
                         .frame(height: 54)
                         .background(
                             RoundedRectangle(cornerRadius: 16)
-                                .fill(isSelected ? AnyShapeStyle(Theme.brandGradient) : AnyShapeStyle(Theme.surface))
-                                .overlay(RoundedRectangle(cornerRadius: 16).strokeBorder(Theme.hairline))
-                                .shadow(color: isSelected ? Theme.brand.opacity(0.35) : .black.opacity(0.04),
+                                .fill(isSelected ? AnyShapeStyle(gradient(for: op)) : AnyShapeStyle(Theme.surface))
+                                .overlay(RoundedRectangle(cornerRadius: 16)
+                                    .strokeBorder(isSelected ? AnyShapeStyle(Theme.hairline)
+                                                             : AnyShapeStyle(color(for: op).opacity(0.35))))
+                                .shadow(color: isSelected ? color(for: op).opacity(0.4) : .black.opacity(0.04),
                                         radius: isSelected ? 8 : 4, y: 3)
                         )
-                        .foregroundStyle(isSelected ? Color.white : Theme.brand)
+                        .foregroundStyle(isSelected ? Color.white : color(for: op))
                 }
                 .buttonStyle(.plain)
                 .animation(.spring(duration: 0.25), value: isSelected)

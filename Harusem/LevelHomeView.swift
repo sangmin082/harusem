@@ -144,7 +144,7 @@ private struct ClearedLevelCard: View {
                     .minimumScaleFactor(0.5)
                     .foregroundStyle(.white)
                     .frame(width: 42, height: 42)
-                    .background(Circle().fill(Theme.goldGradient))
+                    .background(Circle().fill(Theme.levelGradient(level)))
 
                 Text("Level \(level)")
                     .fontWeight(.medium)

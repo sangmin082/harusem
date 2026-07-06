@@ -124,6 +124,8 @@ struct HeartsView: View {
             Spacer()
         }
         .padding(24)
+        .frame(maxWidth: .infinity, maxHeight: .infinity)
+        .background(AppBackground())
         .presentationDetents([.medium])
         .onReceive(timer) { _ in
             model.refreshHearts()

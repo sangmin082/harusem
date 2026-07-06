@@ -10,17 +10,17 @@ struct HelpView: View {
                 .font(.title.bold())
                 .padding(.top, 8)
 
-            ruleRow("plus.forwardslash.minus",
+            ruleRow("plus.forwardslash.minus", Theme.brandGradient,
                     "Combine two tiles with +, −, ×, ÷ to make a new number.")
-            ruleRow("target",
+            ruleRow("target", Theme.tealGradient,
                     "Reach the target exactly for 3 stars.")
-            ruleRow("star.leadinghalf.filled",
+            ruleRow("star.leadinghalf.filled", Theme.goldGradient,
                     "Within ±10: 2 stars. Within ±25: 1 star.")
-            ruleRow("checkmark.circle",
+            ruleRow("checkmark.circle", Theme.greenGradient,
                     "Results must always be positive whole numbers.")
-            ruleRow("arrow.uturn.backward",
+            ruleRow("arrow.uturn.backward", Theme.purpleGradient,
                     "Undo anytime. One puzzle per level — clear it to unlock the next.")
-            ruleRow("heart.fill",
+            ruleRow("heart.fill", Theme.heartGradient,
                     "Finish below 3 stars and you lose one heart. Hearts refill every 10 minutes.")
 
             Spacer()
@@ -33,16 +33,19 @@ struct HelpView: View {
             .buttonStyle(ProminentButtonStyle())
         }
         .padding(24)
+        .frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .topLeading)
+        .background(AppBackground())
         .presentationDetents([.medium, .large])
     }
 
-    private func ruleRow(_ icon: String, _ text: LocalizedStringKey) -> some View {
+    private func ruleRow(_ icon: String, _ gradient: LinearGradient,
+                         _ text: LocalizedStringKey) -> some View {
         HStack(alignment: .top, spacing: 12) {
             Image(systemName: icon)
                 .font(.system(size: 15, weight: .semibold))
                 .foregroundStyle(.white)
                 .frame(width: 32, height: 32)
-                .background(RoundedRectangle(cornerRadius: 8).fill(Theme.brandGradient))
+                .background(RoundedRectangle(cornerRadius: 8).fill(gradient))
             Text(text)
                 .fixedSize(horizontal: false, vertical: true)
         }

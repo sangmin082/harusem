@@ -82,6 +82,8 @@ struct StatsView: View {
                     }
                 }
             }
+            .scrollContentBackground(.hidden)
+            .background(AppBackground())
             .navigationTitle(Text("Settings"))
             .navigationBarTitleDisplayMode(.inline)
             .sheet(isPresented: $showHelp) { HelpView() }

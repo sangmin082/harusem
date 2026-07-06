@@ -31,6 +31,20 @@ enum Theme {
 
     static let success = Color(light: UIColor(red: 0.204, green: 0.780, blue: 0.349, alpha: 1),
                                dark: UIColor(red: 0.188, green: 0.820, blue: 0.345, alpha: 1))
+    static let successDeep = Color(light: UIColor(red: 0.086, green: 0.596, blue: 0.239, alpha: 1),
+                                   dark: UIColor(red: 0.098, green: 0.663, blue: 0.267, alpha: 1))
+
+    /// 청록 (연산자/배지 순환용).
+    static let teal = Color(light: UIColor(red: 0.110, green: 0.714, blue: 0.671, alpha: 1),
+                            dark: UIColor(red: 0.251, green: 0.831, blue: 0.780, alpha: 1))
+    static let tealDeep = Color(light: UIColor(red: 0.0, green: 0.541, blue: 0.549, alpha: 1),
+                                dark: UIColor(red: 0.051, green: 0.651, blue: 0.620, alpha: 1))
+
+    /// 보라 (연산자/배지 순환용).
+    static let purple = Color(light: UIColor(red: 0.686, green: 0.322, blue: 0.871, alpha: 1),
+                              dark: UIColor(red: 0.753, green: 0.439, blue: 0.929, alpha: 1))
+    static let purpleDeep = Color(light: UIColor(red: 0.537, green: 0.173, blue: 0.749, alpha: 1),
+                                  dark: UIColor(red: 0.600, green: 0.278, blue: 0.820, alpha: 1))
 
     // MARK: - 그라디언트
 
@@ -45,6 +59,31 @@ enum Theme {
     }
     static var flameGradient: LinearGradient {
         LinearGradient(colors: [flame, flameDeep], startPoint: .top, endPoint: .bottom)
+    }
+    static var tealGradient: LinearGradient {
+        LinearGradient(colors: [teal, tealDeep], startPoint: .top, endPoint: .bottom)
+    }
+    static var purpleGradient: LinearGradient {
+        LinearGradient(colors: [purple, purpleDeep], startPoint: .top, endPoint: .bottom)
+    }
+    static var greenGradient: LinearGradient {
+        LinearGradient(colors: [success, successDeep], startPoint: .top, endPoint: .bottom)
+    }
+    /// 무지개 포인트 (타겟 카드 테두리 등).
+    static var rainbowGradient: LinearGradient {
+        LinearGradient(colors: [brand, purple, heart, gold, teal],
+                       startPoint: .topLeading, endPoint: .bottomTrailing)
+    }
+
+    /// 레벨 배지용 컬러 순환 (알록달록한 레벨 맵).
+    static func levelGradient(_ level: Int) -> LinearGradient {
+        switch (level - 1) % 5 {
+        case 0: goldGradient
+        case 1: tealGradient
+        case 2: heartGradient
+        case 3: purpleGradient
+        default: flameGradient
+        }
     }
 
     // MARK: - 서피스
@@ -61,6 +100,40 @@ extension Color {
         self.init(uiColor: UIColor { traits in
             traits.userInterfaceStyle == .dark ? dark : light
         })
+    }
+}
+
+/// 알록달록 앱 배경: 베이스 위에 크게 흐린 컬러 블롭 4개.
+/// 모든 화면 뒤에 깔린다 (리스트는 scrollContentBackground(.hidden)으로 비춰 보이게).
+struct AppBackground: View {
+    var body: some View {
+        ZStack {
+            Color(.systemBackground)
+            GeometryReader { geo in
+                let w = geo.size.width
+                let h = geo.size.height
+                ZStack {
+                    Circle()
+                        .fill(Theme.brand.opacity(0.20))
+                        .frame(width: w * 0.95, height: w * 0.95)
+                        .offset(x: -w * 0.32, y: -h * 0.30)
+                    Circle()
+                        .fill(Theme.heart.opacity(0.14))
+                        .frame(width: w * 0.85, height: w * 0.85)
+                        .offset(x: w * 0.42, y: -h * 0.16)
+                    Circle()
+                        .fill(Theme.gold.opacity(0.15))
+                        .frame(width: w * 0.85, height: w * 0.85)
+                        .offset(x: w * 0.38, y: h * 0.34)
+                    Circle()
+                        .fill(Theme.teal.opacity(0.16))
+                        .frame(width: w * 0.95, height: w * 0.95)
+                        .offset(x: -w * 0.38, y: h * 0.22)
+                }
+                .blur(radius: 72)
+            }
+        }
+        .ignoresSafeArea()
     }
 }
 

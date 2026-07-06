@@ -38,6 +38,8 @@ struct LevelsTab: View {
                         Text("Clear a level with at least one star to unlock the next.")
                     }
                 }
+                .scrollContentBackground(.hidden)
+                .background(AppBackground())
                 .navigationTitle(Text("Levels"))
                 .navigationBarTitleDisplayMode(.inline)
                 .onAppear {
@@ -107,7 +109,7 @@ private struct LevelRow: View {
                 Circle().fill(Theme.brandGradient)
                     .shadow(color: Theme.brand.opacity(0.35), radius: 6, y: 3)
             } else if stars != nil {
-                Circle().fill(Theme.goldGradient)
+                Circle().fill(Theme.levelGradient(level))
             } else {
                 Circle().fill(Theme.surface)
                     .overlay(Circle().strokeBorder(Theme.hairline))
