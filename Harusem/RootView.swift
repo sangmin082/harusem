@@ -14,27 +14,28 @@ struct RootView: View {
     }
 
     var body: some View {
-        TabView(selection: $selectedTab) {
-            homeTab
-                .tabItem { Label("Home", systemImage: "house.fill") }
-                .tag(Tab.home)
-
-            LevelsTab(model: model) { selectedTab = .home }
-                .tabItem { Label("Levels", systemImage: "square.grid.3x3.fill") }
-                .tag(Tab.levels)
-
-            StatsView(model: model)
-                .tabItem { Label("Settings", systemImage: "gearshape.fill") }
-                .tag(Tab.settings)
-        }
-        .safeAreaInset(edge: .top, spacing: 0) {
-            // 상단 고정 상태 바: 별/스트릭 + 하트 잔량/충전 카운트다운 (모든 탭 공통).
-            // 배경(.bar)이 노치 영역까지 채워 아래 콘텐츠와 겹치지 않는다.
+        // 상태 바를 TabView 밖(위)에 두어 어떤 탭 콘텐츠와도 겹치지 않는다.
+        // (TabView에 safeAreaInset을 걸면 탭 자식 뷰가 인셋을 무시하고 바 아래로 깔리는 문제가 있었음)
+        VStack(spacing: 0) {
             StatusBar(model: model) { showHearts = true }
                 .padding(.horizontal, 20)
                 .padding(.vertical, 8)
                 .background(.bar)
                 .overlay(alignment: .bottom) { Divider() }
+
+            TabView(selection: $selectedTab) {
+                homeTab
+                    .tabItem { Label("Home", systemImage: "house.fill") }
+                    .tag(Tab.home)
+
+                LevelsTab(model: model) { selectedTab = .home }
+                    .tabItem { Label("Levels", systemImage: "square.grid.3x3.fill") }
+                    .tag(Tab.levels)
+
+                StatsView(model: model)
+                    .tabItem { Label("Settings", systemImage: "gearshape.fill") }
+                    .tag(Tab.settings)
+            }
         }
         .sheet(isPresented: $showHearts) { HeartsView(model: model) }
         .onReceive(heartTimer) { _ in
