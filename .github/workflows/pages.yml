@@ -22,9 +22,8 @@ concurrency:
 jobs:
   deploy:
     runs-on: ubuntu-latest
-    environment:
-      name: github-pages
-      url: ${{ steps.deployment.outputs.page_url }}
+    # environment 블록을 쓰면 Pages 미활성 상태에서 잡이 게이트에 걸려 시작조차 못 한다.
+    # configure-pages(enablement)가 사이트를 먼저 만들 수 있도록 게이트 없이 실행한다.
     steps:
       - uses: actions/checkout@v4
       - uses: actions/configure-pages@v5
