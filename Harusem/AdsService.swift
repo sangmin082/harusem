@@ -9,9 +9,9 @@ import UIKit
 @Observable
 @MainActor
 final class AdsService: NSObject {
-    /// ⚠️ 임시: 신규 AdMob 유닛 활성화 대기 동안 릴리스(TestFlight)에서도 테스트 광고 사용.
-    /// 유닛 활성화가 확인되면 false로 바꿔 실제 광고로 전환할 것. 디버그는 항상 테스트 광고.
-    static let useTestAds = true
+    /// 릴리스는 실제 광고 유닛 사용 (App Store 출시 전까지 AdMob 미승인 상태면 노필로 조용히 실패).
+    /// 디버그는 항상 테스트 광고 — 실제 유닛을 개발 중 노출하면 계정 정지 위험.
+    static let useTestAds = false
 
     private static let testInterstitialID = "ca-app-pub-3940256099942544/4411468910"  // Google 테스트 전면
     private static let testRewardedID = "ca-app-pub-3940256099942544/1712485313"      // Google 테스트 리워드
